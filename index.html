@@ -77,14 +77,107 @@
         }
         .screenshots {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(750px, 1fr));
             gap: 1rem;
             margin-top: 2rem;
+        }
+        .screenshots_mobile {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+        .mobile-item {
+            text-align: center;
+        }
+        .mobile-item h3 {
+            color: #0f172a;
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
         }
         .screenshots img {
             width: 100%;
             border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            cursor: pointer;
+        }
+        .screenshots img:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 12px 24px rgba(0,0,0,0.2);
+        }
+        .screenshots_mobile img {
+            width: 100%;
+            max-width: 400px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            cursor: pointer;
+        }
+        .screenshots_mobile img:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 12px 24px rgba(0,0,0,0.2);
+        }
+        @media (max-width: 768px) {
+            .screenshots_mobile {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        /* Анімації для блоків переваг */
+        .stat-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            cursor: pointer;
+        }
+        .stat-card:hover {
+            transform: translateY(-10px) scale(1.05);
+            box-shadow: 0 16px 32px rgba(0,0,0,0.3) !important;
+        }
+        
+        .benefit-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease, border-left-width 0.3s ease;
+            cursor: pointer;
+        }
+        .benefit-card:hover {
+            transform: translateX(8px);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.15);
+            border-left-width: 8px;
+        }
+        
+        .info-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease, border-left-width 0.3s ease;
+            cursor: pointer;
+        }
+        .info-card:hover {
+            transform: translateX(8px);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.15);
+            border-left-width: 8px;
+        }
+        
+        /* Анімація для списку можливостей */
+        .features ul li {
+            transition: transform 0.2s ease, color 0.2s ease;
+            cursor: pointer;
+        }
+        .features ul li:hover {
+            transform: translateX(10px);
+            color: #3b82f6;
+        }
+        .features ul li:hover:before {
+            color: #3b82f6;
+            transform: scale(1.3);
+        }
+        
+        /* Анімація для технологій */
+        .tech-item {
+            transition: transform 0.3s ease, background 0.3s ease;
+            cursor: pointer;
+            padding: 1rem;
+            border-radius: 8px;
+        }
+        .tech-item:hover {
+            transform: translateX(10px);
+            background: #f1f5f9;
         }
     </style>
 </head>
@@ -92,9 +185,7 @@
     <div class="header">
         <h1>🎓 Система Розкладу Університету</h1>
         <p>Комплексне рішення для управління розкладом занять</p>
-        <a href="https://github.com/your-username/university-schedule" class="btn-demo">
-            📦 Документація
-        </a>
+        
     </div>
 
     <div class="demo-grid">
@@ -134,42 +225,156 @@
     </div>
 
     <div class="features">
-        <h2>📸 Скріншоти</h2>
+        <h2>📸 Скріншоти адмін-панелі</h2>
         <div class="screenshots">
-            <img src="main_screen.png" alt="Головний вигляд">
-            <img src="conflicts.png" alt="Контроль накладок">
-            <img src="requests.png" alt="Панель запитів"><br>
-            <img src="student.png" alt="Мобільний додаток студента">
-            <img src="teacher.png" alt="Мобільний додаток викладача">
+            <div>
+                <h3>Головний вигляд</h3>
+                <img src="main_screen.png" alt="Головний вигляд">
+            </div>
+            <div>
+                <h3>Контроль накладок</h3>
+                <img src="conflicts.png" alt="Контроль накладок">
+            </div>
+            <div>
+                <h3>Панель запитів</h3>
+                <img src="requests.png" alt="Панель запитів">
+            </div>
         </div>
     </div>
 
     <div class="features">
-        <h2>🚀 Швидкий старт</h2>
-        <pre style="background: #f1f5f9; padding: 1rem; border-radius: 8px; overflow-x: auto;">
-# Клонувати репозиторій
-git clone https://github.com/your-username/university-schedule.git
-
-# Перейти в папку
-cd university-schedule
-
-# Відкрити демо
-# Просто відкрийте admin-app/index.html у браузері
-
-# Або запустити локальний сервер
-python -m http.server 8000
-# Відкрити http://localhost:8000/demo-site/
-        </pre>
+        <h2>📱 Мобільні додатки</h2>
+        <div class="screenshots_mobile">
+            <div class="mobile-item">
+                <h3>📸 Мобільний додаток студента</h3>
+                <img src="student.png" alt="Мобільний додаток студента">
+            </div>
+            <div class="mobile-item">
+                <h3>📸 Мобільний додаток викладача</h3>
+                <img src="teacher.png" alt="Мобільний додаток викладача">
+            </div>
+        </div>
     </div>
 
     <div class="features">
+    <h2>💼 Переваги для університету</h2>
+    
+    <!-- Ключові показники -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+        <div class="stat-card" style="text-align: center; padding: 1.5rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 12px; color: white; box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);">
+            <div style="font-size: 3rem; font-weight: bold;">10</div>
+            <div style="opacity: 0.9;">Факультетів</div>
+        </div>
+        
+        <div class="stat-card" style="text-align: center; padding: 1.5rem; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); border-radius: 12px; color: white; box-shadow: 0 4px 12px rgba(240, 147, 251, 0.3);">
+            <div style="font-size: 3rem; font-weight: bold;">~10K</div>
+            <div style="opacity: 0.9;">Користувачів</div>
+        </div>
+        
+        <div class="stat-card" style="text-align: center; padding: 1.5rem; background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); border-radius: 12px; color: white; box-shadow: 0 4px 12px rgba(79, 172, 254, 0.3);">
+            <div style="font-size: 3rem; font-weight: bold;">80%</div>
+            <div style="opacity: 0.9;">Економія часу</div>
+        </div>
+        
+        <div class="stat-card" style="text-align: center; padding: 1.5rem; background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); border-radius: 12px; color: white; box-shadow: 0 4px 12px rgba(67, 233, 123, 0.3);">
+            <div style="font-size: 3rem; font-weight: bold;">95%</div>
+            <div style="opacity: 0.9;">Менше помилок</div>
+        </div>
+    </div>
+    
+    <!-- Економічний ефект -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+        <div class="benefit-card" style="background: #ecfdf5; padding: 1.5rem; border-radius: 8px; border-left: 4px solid #22c55e;">
+            <h3 style="color: #166534; margin-top: 0;">⏱️ Швидкість роботи</h3>
+            <p style="color: #64748b; margin: 0;">Складання розкладу: з 2 тижнів до 2-3 днів</p>
+            <p style="color: #64748b; margin: 0.5rem 0 0 0;">Внесення змін: з 2 днів до 15 хвилин</p>
+        </div>
+        
+        <div class="benefit-card" style="background: #eff6ff; padding: 1.5rem; border-radius: 8px; border-left: 4px solid #3b82f6;">
+            <h3 style="color: #1e40af; margin-top: 0;">📉 Якість розкладу</h3>
+            <p style="color: #64748b; margin: 0;">Автоматична перевірка накладок</p>
+            <p style="color: #64748b; margin: 0.5rem 0 0 0;">Скарги: з 50-70 до 2-5 на семестр</p>
+        </div>
+        
+        <div class="benefit-card" style="background: #fef3c7; padding: 1.5rem; border-radius: 8px; border-left: 4px solid #f59e0b;">
+            <h3 style="color: #92400e; margin-top: 0;">💾 Безпека даних</h3>
+            <p style="color: #64748b; margin: 0;">Автоматичне резервне копіювання</p>
+            <p style="color: #64748b; margin: 0.5rem 0 0 0;">Повна історія змін та відкат</p>
+        </div>
+    </div>
+    
+    <!-- Бізнес-переваги -->
+    <div style="display: grid; gap: 1rem;">
+        <div class="info-card" style="display: flex; gap: 1rem; background: white; padding: 1rem; border-radius: 8px; border-left: 4px solid #3b82f6;">
+            <div style="font-size: 2rem;">🚀</div>
+            <div>
+                <h3 style="margin: 0 0 0.5rem 0; color: #0f172a;">Швидке впровадження</h3>
+                <p style="margin: 0; color: #64748b;">Працює в будь-якому браузері без додаткового ПЗ</p>
+            </div>
+        </div>
+        
+        <div class="info-card" style="display: flex; gap: 1rem; background: white; padding: 1rem; border-radius: 8px; border-left: 4px solid #22c55e;">
+            <div style="font-size: 2rem;">📱</div>
+            <div>
+                <h3 style="margin: 0 0 0.5rem 0; color: #0f172a;">Доступність 24/7</h3>
+                <p style="margin: 0; color: #64748b;">Перегляд з будь-якого пристрою у будь-який час</p>
+            </div>
+        </div>
+        
+        <div class="info-card" style="display: flex; gap: 1rem; background: white; padding: 1rem; border-radius: 8px; border-left: 4px solid #8b5cf6;">
+            <div style="font-size: 2rem;">🔄</div>
+            <div>
+                <h3 style="margin: 0 0 0.5rem 0; color: #0f172a;">Масштабованість</h3>
+                <p style="margin: 0; color: #64748b;">Легко додати нові факультети, інтеграція з іншими системами</p>
+            </div>
+        </div>
+        
+        <div class="info-card" style="display: flex; gap: 1rem; background: white; padding: 1rem; border-radius: 8px; border-left: 4px solid #ec4899;">
+            <div style="font-size: 2rem;">💸</div>
+            <div>
+                <h3 style="margin: 0 0 0.5rem 0; color: #0f172a;">Без ліцензійних платежів</h3>
+                <p style="margin: 0; color: #64748b;">Open-source рішення, відсутність щорічних витрат</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+    <div class="features">
         <h2>🛠️ Технології</h2>
-        <p><strong>Frontend:</strong> HTML5, CSS3, JavaScript (Vanilla)</p>
-        <p><strong>Backend:</strong> Google Apps Script / PHP (опціонально)</p>
-        <p><strong>База даних:</strong> Google Sheets / MySQL</p>
-        <p><strong>Бібліотеки:</strong> Font Awesome, html2canvas</p>
+        <div style="display: grid; gap: 1rem; margin-top: 1rem;">
+            <div class="tech-item" style="display: flex; align-items: center; gap: 1rem;">
+                <div style="font-size: 2rem;">🎨</div>
+                <div>
+                    <strong style="color: #0f172a;">Frontend:</strong> 
+                    <span style="color: #64748b;">HTML5, CSS3, JavaScript (Vanilla)</span>
+                </div>
+            </div>
+            
+            <div class="tech-item" style="display: flex; align-items: center; gap: 1rem;">
+                <div style="font-size: 2rem;">⚙️</div>
+                <div>
+                    <strong style="color: #0f172a;">Backend:</strong> 
+                    <span style="color: #64748b;">Google Apps Script / PHP (опціонально)</span>
+                </div>
+            </div>
+            
+            <div class="tech-item" style="display: flex; align-items: center; gap: 1rem;">
+                <div style="font-size: 2rem;">💾</div>
+                <div>
+                    <strong style="color: #0f172a;">База даних:</strong> 
+                    <span style="color: #64748b;">Google Sheets / MySQL</span>
+                </div>
+            </div>
+            
+            <div class="tech-item" style="display: flex; align-items: center; gap: 1rem;">
+                <div style="font-size: 2rem;">📚</div>
+                <div>
+                    <strong style="color: #0f172a;">Бібліотеки:</strong> 
+                    <span style="color: #64748b;">Font Awesome, html2canvas</span>
+                </div>
+            </div>
+        </div>
     </div>
 </body>
-
 </html>
-

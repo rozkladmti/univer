@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Система Розкладу ЛНУВМБ - Демо</title>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+            background: #f1f5f9;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+        .demo-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+        .demo-card {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: transform 0.2s;
+        }
+        .demo-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 12px rgba(0,0,0,0.15);
+        }
+        .demo-card h2 {
+            color: #0f172a;
+            margin-top: 0;
+        }
+        .demo-card p {
+            color: #64748b;
+            line-height: 1.6;
+        }
+        .btn-demo {
+            display: inline-block;
+            background: #3b82f6;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            text-decoration: none;
+            margin-top: 1rem;
+            transition: background 0.2s;
+        }
+        .btn-demo:hover {
+            background: #2563eb;
+        }
+        .features {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            margin-top: 2rem;
+        }
+        .features ul {
+            list-style: none;
+            padding: 0;
+        }
+        .features li {
+            padding: 0.5rem 0;
+            padding-left: 1.5rem;
+            position: relative;
+        }
+        .features li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #22c55e;
+            font-weight: bold;
+        }
+        .screenshots {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+        .screenshots img {
+            width: 100%;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🎓 Система Розкладу Університету</h1>
+        <p>Комплексне рішення для управління розкладом занять</p>
+        <a href="https://github.com/your-username/university-schedule" class="btn-demo">
+            📦 Документація
+        </a>
+    </div>
+
+    <div class="demo-grid">
+        <div class="demo-card">
+            <h2>👨‍💼 Адмін-панель</h2>
+            <p>Повнофункціональна панель для диспетчера розкладу. Створення, редагування, перенесення пар. Робота з запитами від кафедр.</p>
+            <a href="../admin-app/index.html" class="btn-demo">Переглянути</a>
+        </div>
+
+        <div class="demo-card">
+            <h2>👨‍🎓 Додаток для студентів</h2>
+            <p>Мобільний інтерфейс для перегляду розкладу. Фільтрація по групах, збереження обраних предметів.</p>
+            <a href="../student-app/index.html" class="btn-demo">Переглянути</a>
+        </div>
+
+        <div class="demo-card">
+            <h2>👨‍🏫 Додаток для викладачів</h2>
+            <p>Перегляд власного розкладу, відправка запитів на перенесення пар, комунікація з диспетчером.</p>
+            <a href="../teacher-app/index.html" class="btn-demo">Переглянути</a>
+        </div>
+    </div>
+
+    <div class="features">
+        <h2>🎯 Основні можливості</h2>
+        <ul>
+            <li>Drag & Drop редагування розкладу</li>
+            <li>Система запитів на перенесення пар (з мульти-вибором)</li>
+            <li>Draft режим для кафедр без прав редагування</li>
+            <li>Автоматична перевірка конфліктів (викладачі, аудиторії)</li>
+            <li>Підтримка парних/непарних тижнів</li>
+            <li>Версіонування та історія змін</li>
+            <li>Темна тема</li>
+            <li>Експорт у різні формати (Excel, PDF, зображення)</li>
+            <li>Мобільно-адаптивний дизайн</li>
+            <li>Інтеграція з Google Sheets / MySQL</li>
+        </ul>
+    </div>
+
+    <div class="features">
+        <h2>📸 Скріншоти</h2>
+        <div class="screenshots">
+            <img src="../admin-app/screenshots/main-view.png" alt="Головний вигляд">
+            <img src="../admin-app/screenshots/edit-mode.png" alt="Режим редагування">
+            <img src="../admin-app/screenshots/requests-panel.png" alt="Панель запитів">
+        </div>
+    </div>
+
+    <div class="features">
+        <h2>🚀 Швидкий старт</h2>
+        <pre style="background: #f1f5f9; padding: 1rem; border-radius: 8px; overflow-x: auto;">
+# Клонувати репозиторій
+git clone https://github.com/your-username/university-schedule.git
+
+# Перейти в папку
+cd university-schedule
+
+# Відкрити демо
+# Просто відкрийте admin-app/index.html у браузері
+
+# Або запустити локальний сервер
+python -m http.server 8000
+# Відкрити http://localhost:8000/demo-site/
+        </pre>
+    </div>
+
+    <div class="features">
+        <h2>🛠️ Технології</h2>
+        <p><strong>Frontend:</strong> HTML5, CSS3, JavaScript (Vanilla)</p>
+        <p><strong>Backend:</strong> Google Apps Script / PHP (опціонально)</p>
+        <p><strong>База даних:</strong> Google Sheets / MySQL</p>
+        <p><strong>Бібліотеки:</strong> Font Awesome, html2canvas</p>
+    </div>
+</body>
+</html>

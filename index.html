@@ -148,6 +148,208 @@
            КІНЕЦЬ ОНОВЛЕНИХ СТИЛІВ СКРІНШОТІВ
            ========================================= */
 
+        /* --- FEATURES MODAL --- */
+        .features-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 1.25rem 2rem;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+            margin: 2rem auto;
+            width: fit-content;
+        }
+        
+        .features-btn:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 12px 30px rgba(102, 126, 234, 0.6);
+        }
+        
+        .features-btn-container {
+            text-align: center;
+            margin: 3rem 0;
+        }
+        
+        .features-modal {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.8);
+            animation: fadeIn 0.3s ease;
+        }
+        
+        .features-modal-content {
+            background: white;
+            margin: 2% auto;
+            padding: 0;
+            width: 90%;
+            max-width: 1200px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            animation: slideDown 0.4s ease;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes slideDown {
+            from { transform: translateY(-50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        .features-modal-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem;
+            border-radius: 20px 20px 0 0;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        
+        .features-modal-header h2 {
+            margin: 0;
+            font-size: 2rem;
+            color: white;
+        }
+        
+        .features-close {
+            position: absolute;
+            top: 1.5rem;
+            right: 2rem;
+            color: white;
+            font-size: 2rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        
+        .features-close:hover {
+            transform: scale(1.2) rotate(90deg);
+        }
+        
+        .features-modal-body {
+            padding: 2rem;
+        }
+        
+        .features-section {
+            margin-bottom: 2.5rem;
+        }
+        
+        .features-section-title {
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+            color: #0f172a;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            border-bottom: 3px solid;
+            padding-bottom: 0.5rem;
+        }
+        
+        .features-section-title.student {
+            border-color: #3b82f6;
+            color: #1e40af;
+        }
+        
+        .features-section-title.teacher {
+            border-color: #22c55e;
+            color: #166534;
+        }
+        
+        .features-section-title.admin {
+            border-color: #f59e0b;
+            color: #92400e;
+        }
+        
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1rem;
+        }
+        
+        .feature-item {
+            background: #f8fafc;
+            padding: 1rem;
+            border-radius: 12px;
+            border-left: 4px solid;
+            transition: all 0.3s ease;
+        }
+        
+        .feature-item.student {
+            border-color: #3b82f6;
+        }
+        
+        .feature-item.teacher {
+            border-color: #22c55e;
+        }
+        
+        .feature-item.admin {
+            border-color: #f59e0b;
+        }
+        
+        .feature-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        .feature-item h4 {
+            margin: 0 0 0.5rem 0;
+            color: #0f172a;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .feature-item p {
+            margin: 0;
+            color: #64748b;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        @media (max-width: 640px) {
+            .features-btn {
+                padding: 1rem 1.5rem;
+                font-size: 1rem;
+            }
+            
+            .features-modal-content {
+                width: 95%;
+                margin: 5% auto;
+            }
+            
+            .features-modal-header {
+                padding: 1.5rem;
+            }
+            
+            .features-modal-header h2 {
+                font-size: 1.5rem;
+            }
+            
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
 
         /* Анімації та стилі для блоків статистики (залишено з оригіналу з мінорними правками) */
         .stat-grid {
@@ -347,6 +549,249 @@
 
     <div class="features">
         <h2>📱 Мобільні додатки</h2>
+
+
+    <!-- Features Modal -->
+    <div id="featuresModal" class="features-modal">
+        <div class="features-modal-content">
+            <div class="features-modal-header">
+                <span class="features-close" onclick="closeFeaturesModal()">&times;</span>
+                <h2>✨ Можливості системи розкладу</h2>
+            </div>
+            <div class="features-modal-body">
+                <!-- Для адміна -->
+                <div class="features-section">
+                    <h3 class="features-section-title admin">👨‍💼 Для адміністратора (диспетчера)</h3>
+                    <div class="features-grid">
+                        <div class="feature-item admin">
+                            <h4>🎯 Drag & Drop редактор</h4>
+                            <p>Перетягування пар мишкою - інтуїтивне створення розкладу</p>
+                        </div>
+                        <div class="feature-item admin">
+                            <h4>⚠️ Автоперевірка конфліктів</h4>
+                            <p>Миттєва валідація: аудиторії, викладачі, групи - все перевіряється автоматично</p>
+                        </div>
+                        <div class="feature-item admin">
+                            <h4>🎨 Візуалізація накладок</h4>
+                            <p>Кольорове позначення конфліктів - відразу видно проблеми</p>
+                        </div>
+                        <div class="feature-item admin">
+                            <h4>📋 Панель заявок</h4>
+                            <p>Централізована обробка запитів на перенесення від викладачів</p>
+                        </div>
+                        <div class="feature-item admin">
+                            <h4>🎯 Мульти-вибір варіантів</h4>
+                            <p>Викладач пропонує 3 варіанти - адмін обирає найкращий</p>
+                        </div>
+                        <div class="feature-item admin">
+                            <h4>✅ Схвалення/відхилення</h4>
+                            <p>Один клік для прийняття рішення по заявці</p>
+                        </div>
+                        <div class="feature-item admin">
+                            <h4>📝 Швидке редагування</h4>
+                            <p>Зміна предмета, викладача, аудиторії без пересування пари</p>
+                        </div>
+                        <div class="feature-item admin">
+                            <h4>🔄 Перенесення пар</h4>
+                            <p>Інтерактивна сітка з підсвіткою вільних слотів</p>
+                        </div>
+                        <div class="feature-item admin">
+                            <h4>📊 Статистика завантаження</h4>
+                            <p>Аналіз навантаження викладачів, аудиторій, груп</p>
+                        </div>
+                        <div class="feature-item admin">
+                            <h4>🔍 Пошук і фільтри</h4>
+                            <p>Швидкий пошук по групах, викладачах, аудиторіях</p>
+                        </div>
+                        <div class="feature-item admin">
+                            <h4>📅 Управління тижнями</h4>
+                            <p>Робота з парними/непарними тижнями, копіювання розкладу</p>
+                        </div>
+                        <div class="feature-item admin">
+                            <h4>💾 Історія змін</h4>
+                            <p>Повний лог всіх операцій з можливістю відкату</p>
+                        </div>
+                        <div class="feature-item admin">
+                            <h4>📤 Експорт даних</h4>
+                            <p>PDF, Excel, зображення - будь-який формат</p>
+                        </div>
+                        <div class="feature-item admin">
+                            <h4>🔗 API інтеграція</h4>
+                            <p>Підключення до інших систем університету</p>
+                        </div>
+                        <div class="feature-item admin">
+                            <h4>🌓 Темна тема</h4>
+                            <p>Комфортна робота в будь-який час</p>
+                        </div>
+                        <div class="feature-item admin">
+                            <h4>📱 Адаптивність</h4>
+                            <p>Працює на комп'ютері, планшеті, телефоні</p>
+                        </div>
+                        <div class="feature-item admin">
+                            <h4>⚡ Швидкодія</h4>
+                            <p>Миттєва реакція на будь-які дії</p>
+                        </div>
+                        <div class="feature-item admin">
+                            <h4>🔐 Контроль доступу</h4>
+                            <p>Розмежування прав адміна, викладача, студента</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Для студентів -->
+                <div class="features-section">
+                    <h3 class="features-section-title student">🎓 Для студентів</h3>
+                    <div class="features-grid">
+                        <div class="feature-item student">
+                            <h4>🔍 Розумний пошук групи</h4>
+                            <p>Автодоповнення при введенні - знайти свою групу за 2 секунди</p>
+                        </div>
+                        <div class="feature-item student">
+                            <h4>📅 Розклад на два тижні</h4>
+                            <p>Перегляд I і II тижнів з чіткою індикацією поточного тижня</p>
+                        </div>
+                        <div class="feature-item student">
+                            <h4>⏰ Статус пар в реальному часі</h4>
+                            <p>Бейджі "Зараз" і "Наступна" - завжди знаєш де бути</p>
+                        </div>
+                        <div class="feature-item student">
+                            <h4>📊 Прогрес-бар поточної пари</h4>
+                            <p>Візуальний індикатор скільки залишилось до кінця заняття</p>
+                        </div>
+                        <div class="feature-item student">
+                            <h4>💾 Запам'ятовування вибору</h4>
+                            <p>Обрана група зберігається - не треба вибирати щоразу</p>
+                        </div>
+                        <div class="feature-item student">
+                            <h4>🌓 Темна тема</h4>
+                            <p>Комфортний перегляд вдень і вночі з автозбереженням налаштувань</p>
+                        </div>
+                        <div class="feature-item student">
+                            <h4>👆 Swipe-жести</h4>
+                            <p>Перемикання між тижнями свайпом - як в Instagram</p>
+                        </div>
+                        <div class="feature-item student">
+                            <h4>💧 Watermark номера тижня</h4>
+                            <p>Великий прозорий номер на фоні - завжди зрозуміло який тиждень</p>
+                        </div>
+                        <div class="feature-item student">
+                            <h4>📍 Детальна інфо про пари</h4>
+                            <p>Клік на пару → всі деталі: викладач, аудиторія, посилання, примітки</p>
+                        </div>
+                        <div class="feature-item student">
+                            <h4>🔗 Посилання на онлайн-заняття</h4>
+                            <p>Прямі лінки на Zoom/Meet прямо з картки пари</p>
+                        </div>
+                        <div class="feature-item student">
+                            <h4>☕ Вікна між парами</h4>
+                            <p>Чітке позначення вільного часу для кави та відпочинку</p>
+                        </div>
+                        <div class="feature-item student">
+                            <h4>🎨 Кольорове кодування</h4>
+                            <p>Лекції, практичні, лабораторні - кожен тип має свій колір</p>
+                        </div>
+                        <div class="feature-item student">
+                            <h4>📱 Повна адаптивність</h4>
+                            <p>Працює на телефонах, планшетах, комп'ютерах - будь-де ідеально</p>
+                        </div>
+                        <div class="feature-item student">
+                            <h4>⚡ Миттєве завантаження</h4>
+                            <p>Немає зависань, все працює блискавично</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Для викладачів -->
+                <div class="features-section">
+                    <h3 class="features-section-title teacher">👨‍🏫 Для викладачів</h3>
+                    <div class="features-grid">
+                        <div class="feature-item teacher">
+                            <h4>🔍 Розумний пошук викладача</h4>
+                            <p>Швидкий пошук серед тисяч викладачів з автодоповненням</p>
+                        </div>
+                        <div class="feature-item teacher">
+                            <h4>📋 Система заявок</h4>
+                            <p>Подача заявок на перенесення пар з відстеженням статусу</p>
+                        </div>
+                        <div class="feature-item teacher">
+                            <h4>🎯 Вибір до 3 варіантів</h4>
+                            <p>При перенесенні можна запропонувати 3 альтернативи з пріоритетами</p>
+                        </div>
+                        <div class="feature-item teacher">
+                            <h4>⏳ Індикація pending заявок</h4>
+                            <p>Годинник на картці пари - видно що заявка на розгляді</p>
+                        </div>
+                        <div class="feature-item teacher">
+                            <h4>🗓️ Візуальна сітка перенесення</h4>
+                            <p>Інтерактивний календар з кольоровим позначенням конфліктів</p>
+                        </div>
+                        <div class="feature-item teacher">
+                            <h4>⚠️ Автоперевірка конфліктів</h4>
+                            <p>Система відразу показує де вже є пари групи</p>
+                        </div>
+                        <div class="feature-item teacher">
+                            <h4>📝 Редагування примітки</h4>
+                            <p>Додавання коментарів і посилань до кожної пари</p>
+                        </div>
+                        <div class="feature-item teacher">
+                            <h4>📍 Зміна практикуму</h4>
+                            <p>Можливість змінити аудиторію практичної з перевіркою доступності</p>
+                        </div>
+                        <div class="feature-item teacher">
+                            <h4>📊 Статистика навантаження</h4>
+                            <p>Кількість пар на кожен тиждень, груп, вікон - все в одному вікні</p>
+                        </div>
+                        <div class="feature-item teacher">
+                            <h4>☕ Облік вікон</h4>
+                            <p>Автопідрахунок вільного часу на поточний тиждень</p>
+                        </div>
+                        <div class="feature-item teacher">
+                            <h4>🌓 Темна тема</h4>
+                            <p>Комфортна робота в будь-який час доби</p>
+                        </div>
+                        <div class="feature-item teacher">
+                            <h4>👆 Swipe-жести</h4>
+                            <p>Швидке перемикання між тижнями</p>
+                        </div>
+                        <div class="feature-item teacher">
+                            <h4>💧 Watermark тижня</h4>
+                            <p>Завжди видно який тиждень на екрані</p>
+                        </div>
+                        <div class="feature-item teacher">
+                            <h4>💾 Збереження налаштувань</h4>
+                            <p>Вибраний викладач, тема, тиждень - все запам'ятовується</p>
+                        </div>
+                        <div class="feature-item teacher">
+                            <h4>🔄 Автооновлення</h4>
+                            <p>Розклад оновлюється кожні 5 хвилин автоматично</p>
+                        </div>
+                        <div class="feature-item teacher">
+                            <h4>📱 Повна адаптивність</h4>
+                            <p>Працює на всіх пристроях ідеально</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function openFeaturesModal() {
+            document.getElementById('featuresModal').style.display = 'block';
+        }
+        
+        function closeFeaturesModal() {
+            document.getElementById('featuresModal').style.display = 'none';
+        }
+        
+        // Закриття при кліку поза вікном
+        window.onclick = function(event) {
+            var featuresModal = document.getElementById('featuresModal');
+            if (event.target == featuresModal) {
+                featuresModal.style.display = 'none';
+            }
+        }
+    </script>
         <p style="color: #64748b; text-align: center; margin-bottom: 2rem;">(Натисніть на зображення для збільшення)</p>
         <div class="screenshots_mobile">
             <div class="mobile-item">
@@ -358,6 +803,13 @@
                 <img src="teacher.png" alt="Мобільний додаток викладача">
             </div>
         </div>
+    </div>
+
+    <!-- Features Button -->
+    <div class="features-btn-container">
+        <button class="features-btn" onclick="openFeaturesModal()">
+            ✨ Детальні можливості системи
+        </button>
     </div>
 
     <div class="features">
@@ -540,5 +992,3 @@
     </script>
 </body>
 </html>
-
-

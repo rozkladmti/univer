@@ -2675,7 +2675,7 @@
 
     <script>
         // === ВАЖЛИВО! Вставте сюди URL Вашого скрипта ===
-        const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzQUuhJBNGr6jHiWUejpddE_le9On7elq2FKic4UYexHtWtA36PkAlvZEIqNaWfGAPZZA/exec';
+        const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwKP28EdQ0ITuuTx_DIjqg_PTDaESguiHv8Qujx0b2HHnRlfyC2l5iB1B9TxReoMud4Xw/exec';
         const ADMIN_PASSWORD = 'admin';
         
         // Кастомний alert/confirm
@@ -2784,7 +2784,7 @@
         // Старі списки для зворотної сумісності
         let teachersList = []; let subjectsList = []; let groupsList = []; let roomsList = [];
         
-        let isAdmin = false;
+        let isAdmin = true; // Admin панель - завжди адміністратор
         let isCompareMode = false;
         let actionState = { active: false, type: null, sourceId: null };
         let highlightState = { active: false };

@@ -59,74 +59,89 @@
             justify-content: space-between;
         }
 
-        .header-title {
-            font-size: 1.1rem;
-            font-weight: 800;
-            color: var(--text-main);
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            user-select: none;
+        /* Search Container */
+        .header-search-container {
             position: relative;
-            cursor: pointer;
+            flex: 1;
+            max-width: 400px;
         }
         
-        .header-title:hover {
-            opacity: 0.8;
+        .search-icon {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            pointer-events: none;
         }
         
-        .header-title i.fa-chevron-down {
-            font-size: 0.8rem;
-            margin-left: 4px;
-            transition: transform 0.2s;
+        .teacher-search-input {
+            width: 100%;
+            padding: 8px 12px 8px 36px;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            background: var(--bg-body);
+            color: var(--text-main);
+            font-size: 0.95rem;
+            outline: none;
+            transition: all 0.2s;
         }
         
-        .header-title.open i.fa-chevron-down {
-            transform: rotate(180deg);
+        .teacher-search-input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
         }
         
-        /* Dropdown для викладачів */
-        .header-dropdown {
+        .teacher-search-input::placeholder {
+            color: var(--text-muted);
+        }
+        
+        /* Search Dropdown */
+        .search-dropdown {
             position: absolute;
             top: calc(100% + 8px);
             left: 0;
+            right: 0;
             background: var(--bg-card);
             border: 1px solid var(--border);
             border-radius: 12px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            min-width: 250px;
             max-height: 300px;
             overflow-y: auto;
             z-index: 100;
             display: none;
         }
         
-        .header-dropdown.open {
+        .search-dropdown.open {
             display: block;
         }
         
-        .header-dropdown-item {
+        .search-dropdown-item {
             padding: 12px 16px;
             cursor: pointer;
             transition: background 0.2s;
-            display: flex;
-            align-items: center;
-            gap: 8px;
             border-bottom: 1px solid var(--border);
+            color: var(--text-main);
         }
         
-        .header-dropdown-item:last-child {
+        .search-dropdown-item:last-child {
             border-bottom: none;
         }
         
-        .header-dropdown-item:hover {
+        .search-dropdown-item:hover {
             background: #f1f5f9;
         }
         
-        .header-dropdown-item.active {
+        .search-dropdown-item.highlighted {
             background: rgba(59, 130, 246, 0.1);
-            color: var(--primary);
-            font-weight: 600;
+        }
+        
+        .search-dropdown-empty {
+            padding: 20px;
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.9rem;
         }
 
         .header-actions {
@@ -558,97 +573,41 @@
         }
         
         /* === WINDOW SLOT STYLES === */
-        .window-slot {
-            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
-            border-radius: 14px;
-            padding: 14px 18px;
+        /* Window Card (Вікно) */
+        .window-card {
+            background: transparent;
+            border: 2px dashed #cbd5e1;
+            border-radius: 12px;
+            padding: 12px 16px;
             margin-bottom: 10px;
-            border: 2px dashed #fbbf24;
+            color: var(--text-muted);
             display: flex;
             align-items: center;
             justify-content: space-between;
-            opacity: 0.85;
+            opacity: 0.8;
             transition: all 0.2s;
-            position: relative;
-            overflow: hidden;
         }
         
-        .window-slot::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.1) 50%, transparent 70%);
-            pointer-events: none;
-        }
-        
-        .window-slot:hover {
+        .window-card:hover {
             opacity: 1;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(251, 191, 36, 0.25);
-        }
-        
-        .window-content {
-            display: flex;
-            align-items: center;
-            gap: 14px;
-            flex: 1;
-            z-index: 1;
+            border-color: #94a3b8;
         }
         
         .window-time {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .window-slot-num {
-            font-size: 0.8rem;
-            font-weight: 800;
-            color: #78350f;
-            background: white;
-            width: 28px;
-            height: 28px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 8px;
-            border: 2px solid #fbbf24;
-            box-shadow: 0 2px 4px rgba(120, 53, 15, 0.1);
-        }
-        
-        .window-time-range {
             font-size: 0.85rem;
-            color: #78350f;
             font-weight: 600;
+            background: #e2e8f0;
+            padding: 2px 8px;
+            border-radius: 6px;
+            color: var(--text-main);
         }
         
-        .window-label {
+        .window-info {
             display: flex;
             align-items: center;
             gap: 8px;
             font-size: 0.9rem;
-            color: #92400e;
-            font-weight: 600;
-        }
-        
-        .window-label i {
-            font-size: 1rem;
-            color: #d97706;
-        }
-        
-        .window-icon {
-            font-size: 2rem;
-            opacity: 0.4;
-            z-index: 1;
-            animation: steam 3s ease-in-out infinite;
-        }
-        
-        @keyframes steam {
-            0%, 100% { transform: translateY(0px); opacity: 0.4; }
-            50% { transform: translateY(-3px); opacity: 0.6; }
+            font-weight: 500;
         }
 
         .l-footer {
@@ -703,9 +662,9 @@
             flex: 1;
             padding: 8px 12px;
             border-radius: 8px;
-            border: 1px solid var(--border);
-            background: var(--bg-body);
-            color: var(--text-muted);
+            border: 1px solid #3b82f6;
+            background: #eff6ff;
+            color: #1e40af;
             font-size: 0.8rem;
             font-weight: 600;
             cursor: pointer;
@@ -715,15 +674,25 @@
             justify-content: center;
             gap: 5px;
         }
+        
+        .btn-action:hover {
+            background: #dbeafe;
+            border-color: #2563eb;
+        }
 
         .btn-action:active {
             transform: scale(0.98);
         }
 
         .btn-action.primary {
-            background: var(--primary);
-            color: white;
-            border-color: var(--primary);
+            background: #f0fdfa;
+            color: #0f766e;
+            border-color: #14b8a6;
+        }
+        
+        .btn-action.primary:hover {
+            background: #ccfbf1;
+            border-color: #0d9488;
         }
 
         /* Empty State */
@@ -975,6 +944,36 @@
             border-color: #4ade80;
             transform: translateY(-2px);
             box-shadow: 0 4px 12px rgba(34, 197, 94, 0.2);
+        }
+        
+        .grid-slot.selected {
+            background: #dbeafe;
+            border-color: #3b82f6;
+            border-width: 3px;
+            position: relative;
+        }
+        
+        .grid-slot.selected:hover {
+            background: #bfdbfe;
+            border-color: #2563eb;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+        
+        .slot-priority {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            background: #3b82f6;
+            color: white;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            font-weight: 700;
         }
         
         .grid-slot.conflict {
@@ -1419,6 +1418,57 @@
             background: var(--bg-card);
         }
         
+        body.dark-mode .btn-action {
+            background: #1e3a8a;
+            border-color: #2563eb;
+            color: #bfdbfe;
+        }
+        
+        body.dark-mode .btn-action:hover {
+            background: #1e40af;
+            border-color: #3b82f6;
+        }
+        
+        body.dark-mode .btn-action.primary {
+            background: #134e4a;
+            border-color: #14b8a6;
+            color: #99f6e4;
+        }
+        
+        body.dark-mode .btn-action.primary:hover {
+            background: #115e59;
+            border-color: #5eead4;
+        }
+        
+        body.dark-mode .lesson-card.type-lect .type-tag {
+            background: rgba(251, 146, 60, 0.15);
+            color: #fb923c;
+        }
+        
+        body.dark-mode .lesson-card.type-prac .type-tag {
+            background: rgba(96, 165, 250, 0.15);
+            color: #60a5fa;
+        }
+        
+        body.dark-mode .lesson-card.type-lab .type-tag {
+            background: rgba(52, 211, 153, 0.15);
+            color: #34d399;
+        }
+        
+        body.dark-mode .lesson-card.type-sem .type-tag {
+            background: rgba(192, 132, 252, 0.15);
+            color: #c084fc;
+        }
+        
+        body.dark-mode .window-card {
+            border-color: #475569;
+        }
+        
+        body.dark-mode .window-time {
+            background: #1e293b;
+            color: #e2e8f0;
+        }
+        
         body.dark-mode .form-input {
             background: #0f172a;
             border-color: #334155;
@@ -1445,16 +1495,26 @@
             border-left-color: var(--border);
         }
         
-        body.dark-mode .header-dropdown {
+        body.dark-mode .teacher-search-input {
+            background: #0f172a;
+            border-color: #334155;
+            color: #f1f5f9;
+        }
+        
+        body.dark-mode .teacher-search-input:focus {
+            border-color: var(--primary);
+        }
+        
+        body.dark-mode .search-dropdown {
             background: var(--bg-card);
             border-color: var(--border);
         }
         
-        body.dark-mode .header-dropdown-item:hover {
+        body.dark-mode .search-dropdown-item:hover {
             background: #0f172a;
         }
         
-        body.dark-mode .header-dropdown-item.active {
+        body.dark-mode .search-dropdown-item.highlighted {
             background: rgba(59, 130, 246, 0.2);
         }
     </style>
@@ -1464,11 +1524,16 @@
 
     <header>
         <div class="header-row">
-            <div class="header-title" id="headerTitle">
-                <i class="fa-solid fa-chalkboard-user" style="color:var(--primary)"></i>
-                <span id="headerTeacher">Оберіть викладача</span>
-                <i class="fa-solid fa-chevron-down"></i>
-                <div class="header-dropdown" id="teacherDropdown"></div>
+            <div class="header-search-container">
+                <i class="fa-solid fa-search search-icon"></i>
+                <input 
+                    type="text" 
+                    id="teacherSearch" 
+                    class="teacher-search-input" 
+                    placeholder="🔍 Введіть прізвище викладача..."
+                    autocomplete="off"
+                />
+                <div class="search-dropdown" id="searchDropdown"></div>
             </div>
             <div class="header-actions">
                 <button class="btn-icon" id="requestsBtn" onclick="openRequestsModal()" title="Мої заявки">
@@ -1530,6 +1595,7 @@
             </div>
             <div class="move-modal-footer">
                 <button class="btn btn-secondary" onclick="cancelMoveMode()">Скасувати</button>
+                <button class="btn btn-primary" onclick="submitMoveRequest()" id="submitMoveBtn">Відправити заявку</button>
             </div>
         </div>
     </div>
@@ -1801,7 +1867,7 @@
         let selectedTeacher = localStorage.getItem('selectedTeacher') || null;
         let currentWeek = 1;
         let currentLesson = null;
-        let selectedVariant = null;
+        let selectedVariants = []; // Масив до 3 варіантів
         let editingLesson = null; // Пара що редагується
         
         // Touch tracking for swipe gestures
@@ -1823,30 +1889,13 @@
         
         async function init() {
             await fetchSchedule();
-            setupEventListeners();
             initSwipeGestures();
-            
-            if (selectedTeacher) {
-                document.getElementById('headerTeacher').textContent = selectedTeacher;
-            }
             
             renderSchedule();
             updateRequestsBadge();
             
             // Auto-refresh every 5 minutes
             setInterval(() => fetchSchedule(false), 5 * 60 * 1000);
-        }
-
-        function setupEventListeners() {
-            document.getElementById('headerTitle').addEventListener('click', toggleTeacherDropdown);
-            
-            // Close dropdown when clicking outside
-            document.addEventListener('click', (e) => {
-                if (!e.target.closest('#headerTitle')) {
-                    document.getElementById('teacherDropdown').classList.remove('open');
-                    document.getElementById('headerTitle').classList.remove('open');
-                }
-            });
         }
 
         // ==========================================
@@ -1872,8 +1921,8 @@
                         updateCurrentWeekIndicator();
                     }
                     
-                    // Update teachers dropdown
-                    renderTeachersDropdown();
+                    // Initialize teacher search
+                    initTeacherSearch();
                     
                     // Update requests badge
                     updateRequestsBadge();
@@ -1894,35 +1943,98 @@
         // TEACHERS DROPDOWN
         // ==========================================
         
-        function renderTeachersDropdown() {
-            const dropdown = document.getElementById('teacherDropdown');
-            const teachers = allData?.live?.teachers || [];
+        // ==========================================
+        // TEACHER SEARCH
+        // ==========================================
+        
+        let allTeachers = [];
+        let highlightedIndex = -1;
+        
+        function initTeacherSearch() {
+            const searchInput = document.getElementById('teacherSearch');
+            const dropdown = document.getElementById('searchDropdown');
             
-            dropdown.innerHTML = teachers.map(teacher => `
-                <div class="header-dropdown-item ${teacher === selectedTeacher ? 'active' : ''}" 
-                     onclick="selectTeacher('${teacher.replace(/'/g, "\\'")}')">
-                    <i class="fa-solid fa-user"></i>
-                    ${teacher}
-                </div>
-            `).join('');
+            // Отримуємо список викладачів
+            if (allData && allData.live.teachers) {
+                allTeachers = allData.live.teachers.map(t => t.name).sort();
+            }
+            
+            // При введенні тексту
+            searchInput.addEventListener('input', (e) => {
+                const query = e.target.value.trim().toLowerCase();
+                highlightedIndex = -1;
+                
+                if (query.length < 2) {
+                    dropdown.classList.remove('open');
+                    return;
+                }
+                
+                // Фільтруємо викладачів
+                const filtered = allTeachers.filter(name => 
+                    name.toLowerCase().includes(query)
+                );
+                
+                if (filtered.length === 0) {
+                    dropdown.innerHTML = '<div class="search-dropdown-empty">Не знайдено викладачів</div>';
+                    dropdown.classList.add('open');
+                } else {
+                    dropdown.innerHTML = filtered.slice(0, 10).map(name => 
+                        `<div class="search-dropdown-item" onclick="selectTeacher('${name}')">${name}</div>`
+                    ).join('');
+                    dropdown.classList.add('open');
+                }
+            });
+            
+            // Клавіатурна навігація
+            searchInput.addEventListener('keydown', (e) => {
+                const items = dropdown.querySelectorAll('.search-dropdown-item');
+                
+                if (e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    highlightedIndex = Math.min(highlightedIndex + 1, items.length - 1);
+                    updateHighlight(items);
+                } else if (e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    highlightedIndex = Math.max(highlightedIndex - 1, 0);
+                    updateHighlight(items);
+                } else if (e.key === 'Enter' && highlightedIndex >= 0) {
+                    e.preventDefault();
+                    items[highlightedIndex].click();
+                } else if (e.key === 'Escape') {
+                    dropdown.classList.remove('open');
+                }
+            });
+            
+            // Закриття при кліку поза dropdown
+            document.addEventListener('click', (e) => {
+                if (!searchInput.contains(e.target) && !dropdown.contains(e.target)) {
+                    dropdown.classList.remove('open');
+                }
+            });
+            
+            // Якщо є збережений викладач - показуємо
+            if (selectedTeacher) {
+                searchInput.placeholder = `✓ ${selectedTeacher}`;
+            }
         }
-
-        function toggleTeacherDropdown() {
-            const dropdown = document.getElementById('teacherDropdown');
-            const header = document.getElementById('headerTitle');
-            dropdown.classList.toggle('open');
-            header.classList.toggle('open');
+        
+        function updateHighlight(items) {
+            items.forEach((item, index) => {
+                item.classList.toggle('highlighted', index === highlightedIndex);
+            });
         }
 
         function selectTeacher(teacher) {
             selectedTeacher = teacher;
             localStorage.setItem('selectedTeacher', teacher);
-            document.getElementById('headerTeacher').textContent = teacher;
-            document.getElementById('teacherDropdown').classList.remove('open');
-            document.getElementById('headerTitle').classList.remove('open');
+            
+            const searchInput = document.getElementById('teacherSearch');
+            searchInput.value = '';
+            searchInput.placeholder = `✓ ${teacher}`;
+            
+            document.getElementById('searchDropdown').classList.remove('open');
             
             renderSchedule();
-            renderRequests();
             updateRequestsBadge();
         }
 
@@ -2371,17 +2483,12 @@
             const timeSlot = getTimeSlot(day, slotNum);
             
             return `
-                <div class="window-slot">
-                    <div class="window-content">
-                        <div class="window-time">
-                            <span class="window-slot-num">${slotNum}</span>
-                            <span class="window-time-range">${timeSlot.start} - ${timeSlot.end}</span>
-                        </div>
-                        <div class="window-label">
-                            <span>Вікно</span>
-                        </div>
+                <div class="window-card">
+                    <div class="window-info">
+                        <i class="fa-solid fa-mug-hot" style="font-size:1.2rem;"></i>
+                        <span>Вікно (вільний час)</span>
                     </div>
-                    <div class="window-icon">☕</div>
+                    <div class="window-time">${timeSlot.time}</div>
                 </div>
             `;
         }
@@ -2557,10 +2664,21 @@
         }
 
         async function submitRequest() {
-            if (!currentLesson || !selectedVariant) {
-                await customAlert('Оберіть новий час для пари', 'Увага', 'warning');
+            if (!currentLesson || selectedVariants.length === 0) {
+                await customAlert('Оберіть хоча б один варіант для пари', 'Увага', 'warning');
                 return;
             }
+            
+            const variantCount = selectedVariants.length;
+            const variantWord = variantCount === 1 ? 'варіант' : variantCount < 5 ? 'варіанти' : 'варіантів';
+            const confirmed = await customConfirm(
+                `Відправити заявку на перенесення з ${variantCount} ${variantWord}?`,
+                'Підтвердження',
+                'Відправити',
+                'Скасувати'
+            );
+            
+            if (!confirmed) return;
             
             const requestData = {
                 action: 'propose',
@@ -2574,7 +2692,11 @@
                         slot: currentLesson.slot,
                         week: currentLesson.week
                     },
-                    variants: [selectedVariant]
+                    variants: selectedVariants.map((v, i) => ({
+                        day: v.day,
+                        slot: v.slot,
+                        priority: i + 1
+                    }))
                 }
             };
             
@@ -2602,7 +2724,7 @@
         function closeModal() {
             document.getElementById('modalOverlay').classList.remove('open');
             currentLesson = null;
-            selectedVariant = null;
+            selectedVariants = [];
         }
         END OF DEPRECATED FUNCTIONS */
 
@@ -2621,6 +2743,7 @@
             moveMode.active = true;
             moveMode.lesson = lesson;
             moveMode.targetWeek = lesson.week; // За замовчуванням - тиждень поточної пари
+            selectedVariants = []; // Скидаємо вибрані варіанти
             
             // Показуємо інформацію про пару
             const dayName = typeof lesson.day === 'number' ? DAYS_MAP[lesson.day] : lesson.day;
@@ -2680,6 +2803,10 @@
                                      (dayNum === lessonDayNum) && 
                                      (slotNum === lesson.slot);
                     
+                    // Перевіряємо чи вибраний як варіант
+                    const variantIndex = selectedVariants.findIndex(v => v.day === dayNum && v.slot === slotNum);
+                    const isSelected = variantIndex >= 0;
+                    
                     // Перевіряємо конфлікт (окрім самої поточної пари)
                     const conflict = groupLessons.find(l => {
                         const lDayNum = typeof l.day === 'number' ? l.day : 
@@ -2693,6 +2820,9 @@
                     if (isCurrent) {
                         slotClass += ' current';
                         slotContent = '<div class="slot-group">Поточна</div>';
+                    } else if (isSelected) {
+                        slotClass += ' selected';
+                        slotContent = `<div class="slot-priority">${variantIndex + 1}</div><div class="slot-group">Обрано</div>`;
                     } else if (conflict) {
                         slotClass += ' conflict';
                         slotContent = `
@@ -2704,8 +2834,8 @@
                         slotContent = '<div class="slot-group">Вільно</div>';
                     }
                     
-                    const onClick = (isCurrent || conflict) ? '' : 
-                        `onclick="selectMoveTarget(${dayNum}, ${slotNum})"`;
+                    const onClick = isCurrent ? '' : 
+                        `onclick="toggleMoveTarget(${dayNum}, ${slotNum})"`;
                     
                     html += `<div class="${slotClass}" ${onClick}>${slotContent}</div>`;
                 }
@@ -2714,29 +2844,56 @@
             grid.innerHTML = html;
         }
         
-        async function selectMoveTarget(dayNum, slotNum) {
-            const lesson = moveMode.lesson;
-            const targetWeek = moveMode.targetWeek;
-            const weekRoman = targetWeek === 1 ? 'I' : 'II';
-            const originalWeekRoman = lesson.week === 1 ? 'I' : 'II';
+        function toggleMoveTarget(dayNum, slotNum) {
+            // Перевіряємо чи вже обраний
+            const existingIndex = selectedVariants.findIndex(v => v.day === dayNum && v.slot === slotNum);
             
-            // Визначаємо оригінальний день
-            const originalDayNum = typeof lesson.day === 'number' ? lesson.day : 
-                parseInt(Object.keys(DAYS_MAP).find(key => DAYS_MAP[key] === lesson.day));
-            const originalDayName = DAYS_MAP[originalDayNum];
-            
-            // Формуємо детальне повідомлення
-            let confirmMessage = `${lesson.subject} (${lesson.group})\n\n`;
-            confirmMessage += `З: ${originalDayName}, ${lesson.slot} пара (${originalWeekRoman} тиждень)\n`;
-            confirmMessage += `На: ${DAYS_MAP[dayNum]}, ${slotNum} пара`;
-            if (targetWeek !== lesson.week) {
-                confirmMessage += ` (${weekRoman} тиждень)`;
+            if (existingIndex >= 0) {
+                // Видаляємо якщо вже обраний
+                selectedVariants.splice(existingIndex, 1);
+            } else {
+                // Перевіряємо ліміт 3 варіанти
+                if (selectedVariants.length >= 3) {
+                    customAlert('Можна обрати максимум 3 варіанти', 'Увага', 'warning');
+                    return;
+                }
+                // Додаємо новий варіант
+                selectedVariants.push({ day: dayNum, slot: slotNum });
             }
             
-            const confirmed = await customConfirm(confirmMessage, 'Підтвердження перенесення', 'Перенести', 'Скасувати');
-            if (!confirmed) {
+            // Оновлюємо відображення
+            renderMoveGrid();
+        }
+        
+        async function selectMoveTarget(dayNum, slotNum) {
+            // Ця функція вже не використовується, замінена на toggleMoveTarget + submitRequest
+        }
+        
+        function cancelMoveMode() {
+            moveMode.active = false;
+            moveMode.lesson = null;
+            moveMode.targetWeek = 1;
+            selectedVariants = [];
+            document.getElementById('moveModal').classList.remove('open');
+        }
+        
+        async function submitMoveRequest() {
+            const lesson = moveMode.lesson;
+            if (!lesson || selectedVariants.length === 0) {
+                await customAlert('Оберіть хоча б один варіант для пари', 'Увага', 'warning');
                 return;
             }
+            
+            const variantCount = selectedVariants.length;
+            const variantWord = variantCount === 1 ? 'варіантом' : 'варіантами';
+            const confirmed = await customConfirm(
+                `Відправити заявку на перенесення з ${variantCount} ${variantWord}?`,
+                'Підтвердження',
+                'Відправити',
+                'Скасувати'
+            );
+            
+            if (!confirmed) return;
             
             const requestData = {
                 action: 'propose',
@@ -2750,11 +2907,12 @@
                         slot: lesson.slot,
                         week: lesson.week
                     },
-                    variants: [{
-                        day: dayNum,
-                        slot: slotNum,
-                        week: targetWeek  // Використовуємо вибраний тиждень
-                    }]
+                    variants: selectedVariants.map((v, i) => ({
+                        day: v.day,
+                        slot: v.slot,
+                        week: moveMode.targetWeek,
+                        priority: i + 1
+                    }))
                 }
             };
             
@@ -2777,13 +2935,6 @@
                 console.error('Error submitting request:', error);
                 await customAlert('Помилка відправки заявки', 'Помилка', 'error');
             }
-        }
-        
-        function cancelMoveMode() {
-            moveMode.active = false;
-            moveMode.lesson = null;
-            moveMode.targetWeek = 1;
-            document.getElementById('moveModal').classList.remove('open');
         }
         
         // ==========================================

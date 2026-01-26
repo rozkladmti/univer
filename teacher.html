@@ -1750,7 +1750,7 @@
         // НАЛАШТУВАННЯ
         // ==========================================
         
-        const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzQUuhJBNGr6jHiWUejpddE_le9On7elq2FKic4UYexHtWtA36PkAlvZEIqNaWfGAPZZA/exec';
+        const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwKP28EdQ0ITuuTx_DIjqg_PTDaESguiHv8Qujx0b2HHnRlfyC2l5iB1B9TxReoMud4Xw/exec';
 
         // ==========================================
         // CUSTOM ALERT/CONFIRM
@@ -1956,7 +1956,16 @@
             
             // Отримуємо список викладачів
             if (allData && allData.live.teachers) {
-                allTeachers = allData.live.teachers.map(t => t.name).sort();
+                // Перевіряємо чи це масив об'єктів чи масив рядків
+                if (Array.isArray(allData.live.teachers) && allData.live.teachers.length > 0) {
+                    if (typeof allData.live.teachers[0] === 'object' && allData.live.teachers[0].name) {
+                        // Масив об'єктів з полем name
+                        allTeachers = allData.live.teachers.map(t => t.name).sort();
+                    } else {
+                        // Масив рядків
+                        allTeachers = [...allData.live.teachers].sort();
+                    }
+                }
             }
             
             // При введенні тексту

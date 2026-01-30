@@ -2673,10 +2673,11 @@
         </div>
     </div>
 
+    <script src="config.js"></script>
     <script>
-        // === ВАЖЛИВО! Вставте сюди URL Вашого скрипта ===
-        const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxlOJ8whgnqBhB6ySe6_MW_nPiid0VfyA_-uSkqIHDrJMZ6hrbFP-aB9KeBRnAsTiElxQ/exec';
-        const ADMIN_PASSWORD = 'admin';
+        // Configuration loaded from external config.js file
+        const GOOGLE_SCRIPT_URL = CONFIG.GOOGLE_SCRIPT_URL;
+        const ADMIN_PASSWORD = CONFIG.ADMIN_PASSWORD;
         
         // Кастомний alert/confirm
         let customAlertResolve = null;

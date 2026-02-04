@@ -246,6 +246,7 @@
         }
         
         body.dark-mode .lesson-subject { color: #f1f5f9; }
+        body.dark-mode .lesson-subject:hover { background: #334155; }
         body.dark-mode .lesson-footer { color: var(--text-secondary); }
         
         body.dark-mode .status-badge { 
@@ -398,12 +399,14 @@
         }
         body.multi-choice-active .lesson-card .group-badge,
         body.multi-choice-active .lesson-card .teacher-row,
+        body.multi-choice-active .lesson-card .lesson-subject,
         body.multi-choice-active .lesson-card .room-row {
             pointer-events: none !important;
             cursor: default !important;
         }
         body.multi-choice-active .lesson-card .group-badge:hover,
-        body.multi-choice-active .lesson-card .teacher-row:hover {
+        body.multi-choice-active .lesson-card .teacher-row:hover,
+        body.multi-choice-active .lesson-card .lesson-subject:hover {
             background: transparent !important;
             color: inherit !important;
             border-color: transparent !important;
@@ -749,14 +752,17 @@
         /* Блокування активних зон в режимах маніпуляцій */
         body.mode-move .lesson-card .group-badge,
         body.mode-move .lesson-card .teacher-row,
+        body.mode-move .lesson-card .lesson-subject,
         body.mode-move .lesson-card .room-row,
         body.mode-move .lesson-card .card-actions,
         body.mode-swap .lesson-card .group-badge,
         body.mode-swap .lesson-card .teacher-row,
+        body.mode-swap .lesson-card .lesson-subject,
         body.mode-swap .lesson-card .room-row,
         body.mode-swap .lesson-card .card-actions,
         body.mode-duplicate .lesson-card .group-badge,
         body.mode-duplicate .lesson-card .teacher-row,
+        body.mode-duplicate .lesson-card .lesson-subject,
         body.mode-duplicate .lesson-card .room-row,
         body.mode-duplicate .lesson-card .card-actions {
             pointer-events: none !important;
@@ -1074,7 +1080,8 @@
         .lesson-card[data-type="Лабораторна"] .type-badge { background: #d1fae5; color: #059669; }
         .lesson-card[data-type="Практична"] .type-badge { background: #dbeafe; color: #2563eb; }
         .lesson-card[data-type="Семінар"] .type-badge { background: #ede9fe; color: #7c3aed; }
-        .lesson-subject { font-size: 11px; font-weight: 700; color: #0f172a; line-height: 1.25; margin-bottom: 2px; }
+        .lesson-subject { font-size: 11px; font-weight: 700; color: #0f172a; line-height: 1.25; margin-bottom: 2px; cursor: pointer; padding: 2px; margin: -2px -2px 0 -2px; transition: background 0.2s; }
+        .lesson-subject:hover { background: #e2e8f0; border-radius: 3px; }
         .lesson-footer { font-size: 9px; color: #64748b; display: flex; flex-direction: column; gap: 1px; }
         .info-row { display: flex; align-items: center; gap: 4px; border-radius: 2px; }
         .teacher-row { cursor: pointer; padding: 0 2px; margin-left: -2px; transition: background 0.2s; }
@@ -2702,7 +2709,7 @@
         </div>
     </div>
 
-    <script>
+    <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
         // === ВАЖЛИВО! Вставте сюди URL Вашого скрипта ===
         const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzJyFr4H4o5M_UMCuIdxKYmbCPOzJreXeCU5HLqyrOPwZbIG4xcQmc-nEi98GqoH-8c/exec';
         const ADMIN_PASSWORD = 'admin';
@@ -5296,6 +5303,7 @@
             div.dataset.group = lesson.group; 
             div.dataset.teacher = lesson.teacher; 
             div.dataset.teacher2 = lesson.teacher2;
+            div.dataset.subject = lesson.subject;
             
             // Додаємо departmentcode до dataset для легкого доступу при фільтрації
             const deptCodeForCard = lesson.departmentcode || lesson._requestDepartment || 'UNKNOWN';
@@ -5395,7 +5403,12 @@
             }
             
             // --- І ТУТ ТЕЖ (для груп): замість title пишемо data-tooltip ---
-            div.innerHTML = `<div class="card-top-row"><span class="group-badge" onclick="activateHighlight('group', '${lesson.group}', event)" data-tooltip="${lesson.group || ''}">${lesson.group || '-'}</span><span class="type-badge" data-tooltip="${lesson.type}"><i class="fa-solid ${typeInfo.icon}"></i> ${typeInfo.short}</span>${deptBadgeHtml}</div>${actionsHtml}<div class="lesson-subject">${lesson.subject}</div><div class="lesson-footer"><div class="info-row teacher-row" onclick="activateHighlight('teacher', '${lesson.teacher}', event)"><i class="fa-regular fa-user"></i> ${teacherDisplay}</div><div class="info-row room-row"><i class="fa-solid fa-location-dot"></i> ${roomDisplay}</div>${lesson.note ? `<div style="font-size:9px;color:#d97706;margin-top:2px;">${lesson.note}</div>` : ''}</div>`;
+            // Екрануємо апострофи для безпечного використання в onclick
+            const safeGroup = (lesson.group || '').replace(/'/g, "\\'");
+            const safeSubject = (lesson.subject || '').replace(/'/g, "\\'");
+            const safeTeacher = (lesson.teacher || '').replace(/'/g, "\\'");
+            
+            div.innerHTML = `<div class="card-top-row"><span class="group-badge" onclick="activateHighlight('group', '${safeGroup}', event)" data-tooltip="${lesson.group || ''}">${lesson.group || '-'}</span><span class="type-badge" data-tooltip="${lesson.type}"><i class="fa-solid ${typeInfo.icon}"></i> ${typeInfo.short}</span>${deptBadgeHtml}</div>${actionsHtml}<div class="lesson-subject" onclick="activateHighlight('subject', '${safeSubject}', event)">${lesson.subject}</div><div class="lesson-footer"><div class="info-row teacher-row" onclick="activateHighlight('teacher', '${safeTeacher}', event)"><i class="fa-regular fa-user"></i> ${teacherDisplay}</div><div class="info-row room-row"><i class="fa-solid fa-location-dot"></i> ${roomDisplay}</div>${lesson.note ? `<div style="font-size:9px;color:#d97706;margin-top:2px;">${lesson.note}</div>` : ''}</div>`;
             
             // Обробка кліків на request ghosts (тільки для адміна в режимі порівняння)
             if (lesson._isRequestGhost && isAdmin && doDiff) {
@@ -5411,7 +5424,7 @@
             } else if (!doDiff) {
                 div.addEventListener('dragstart', handleDragStart);
                 div.addEventListener('click', (e) => {
-                    if(!e.target.closest('.action-btn') && !e.target.closest('.group-badge') && !e.target.closest('.teacher-row') && !e.target.closest('.mobile-menu-item')) {
+                    if(!e.target.closest('.action-btn') && !e.target.closest('.group-badge') && !e.target.closest('.teacher-row') && !e.target.closest('.lesson-subject') && !e.target.closest('.mobile-menu-item')) {
                         // Якщо режим мульти-вибору - обираємо source lesson
                         if (multiChoiceState.active) {
                             e.stopPropagation();
@@ -6701,7 +6714,7 @@
             p.classList.add('show'); 
             reapplyHighlight(); 
         }
-        function reapplyHighlight() { document.querySelectorAll('.lesson-card').forEach(c => { c.classList.remove('highlighted'); let match = false; if(highlightState.type === 'group' && c.dataset.group && c.dataset.group.includes(highlightState.value)) match = true; if(highlightState.type === 'teacher' && (c.dataset.teacher === highlightState.value || c.dataset.teacher2 === highlightState.value)) match = true; if(match) c.classList.add('highlighted'); }); }
+        function reapplyHighlight() { document.querySelectorAll('.lesson-card').forEach(c => { c.classList.remove('highlighted'); let match = false; if(highlightState.type === 'group' && c.dataset.group && c.dataset.group.includes(highlightState.value)) match = true; if(highlightState.type === 'teacher' && (c.dataset.teacher === highlightState.value || c.dataset.teacher2 === highlightState.value)) match = true; if(highlightState.type === 'subject' && c.dataset.subject === highlightState.value) match = true; if(match) c.classList.add('highlighted'); }); }
         function clearHighlight() { highlightState.active = false; document.body.classList.remove('spotlight-active'); document.getElementById('filter-panel').classList.remove('show'); document.querySelectorAll('.lesson-card').forEach(c => c.classList.remove('highlighted')); }
         function handleBodyClick(e) { if(!e.target.closest('.mobile-actions')) closeAllMobileMenus(); if(highlightState.active && !e.target.closest('.lesson-card') && !e.target.closest('.top-bar') && !e.target.closest('.modal-box')) clearHighlight(); }
         function updateLiveStatus() { 

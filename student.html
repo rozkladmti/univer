@@ -1,6 +1,11 @@
 <!DOCTYPE html>
 <html lang="uk">
 <head>
+    <!--
+    Система управління розкладом Університету
+    Розробник: Ігор Рамський (ramskij@gmail.com)
+    © 2026 Всі права захищені
+    -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Розклад студента</title>
@@ -1005,9 +1010,101 @@
             background: var(--bg-card);
             border-left-color: var(--border);
         }
+        
+        /* === ШВИДКІ ФІЛЬТРИ === */
+        /* Панель фільтра */
+        #filter-panel {
+            position: fixed;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%) translateY(-100%);
+            background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 0 0 12px 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+        
+        #filter-panel.show {
+            transform: translateX(-50%) translateY(0);
+        }
+        
+        #filter-panel button {
+            background: white;
+            border: none;
+            color: #1e3a8a;
+            font-weight: 700;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+        }
+        
+        #filter-panel button:hover {
+            background: #f1f5f9;
+            transform: scale(1.05);
+        }
+        
+        /* Підсвітка активних елементів */
+        body.spotlight-active .lesson-card {
+            opacity: 0.3;
+            transition: opacity 0.2s;
+        }
+        
+        body.spotlight-active .lesson-card.highlighted {
+            opacity: 1;
+        }
+        
+        /* Інтерактивні елементи для фільтрів */
+        .l-subject {
+            cursor: pointer;
+            padding: 4px;
+            margin: -4px -4px 8px -4px;
+            border-radius: 6px;
+            transition: background 0.2s;
+        }
+        
+        .l-subject:hover {
+            background: rgba(59, 130, 246, 0.1);
+        }
+        
+        .l-row.clickable {
+            cursor: pointer;
+            padding: 2px 4px;
+            margin-left: -4px;
+            border-radius: 4px;
+            transition: background 0.2s;
+        }
+        
+        .l-row.clickable:hover {
+            background: rgba(59, 130, 246, 0.1);
+        }
+        
+        /* Темна тема для фільтрів */
+        body.dark-mode .l-subject:hover {
+            background: rgba(59, 130, 246, 0.2);
+        }
+        
+        body.dark-mode .l-row.clickable:hover {
+            background: rgba(59, 130, 246, 0.2);
+        }
     </style>
 </head>
 <body>
+    <!-- Панель швидкого фільтра -->
+    <div id="filter-panel">
+        <span id="filter-msg"><i class="fa-solid fa-filter"></i> Фільтр активний</span>
+        <button onclick="clearHighlight()">Скинути (Esc)</button>
+    </div>
+    
     <div id="weekWatermark" class="watermark" aria-hidden="true"></div>
 
     <header>
@@ -1796,6 +1893,10 @@
                             card.className = `lesson-card ${typeClass} ${status === 'now' ? 'is-now' : ''}`;
                             card.onclick = () => openModal(lesson, slotInfo.time, dayName);
                             
+                            // Додаємо data-атрибути для фільтрації
+                            card.dataset.subject = lesson.subject;
+                            card.dataset.teacher = lesson.teacher;
+                            
                             // Визначаємо чи це практикум і отримуємо назву кафедри
                             // Використовуємо departmentcode з уроку для точного співставлення
                             const lessonDeptCode = lesson.departmentcode || lesson.departmentCode;
@@ -1803,19 +1904,23 @@
                             const deptName = roomDeptCode ? getDepartmentName(roomDeptCode) : '';
                             const roomDisplay = lesson.room || 'online';
                             
+                            // Екрануємо апострофи для onclick
+                            const safeSubject = (lesson.subject || '').replace(/'/g, "\\'");
+                            const safeTeacher = (lesson.teacher || '').replace(/'/g, "\\'");
+                            
                             card.innerHTML = `
                                 ${statusHtml}
                                 <div class="l-header">
                                     <div class="l-num">${lesson.slot}</div>
                                     <div class="l-time">${slotInfo.time}</div>
                                 </div>
-                                <div class="l-subject">
+                                <div class="l-subject" onclick="event.stopPropagation(); activateHighlight('subject', '${safeSubject}', event)">
                                     ${lesson.subject}
                                     ${lesson.note ? '<i class="fa-solid fa-circle-info note-indicator" title="Є додаткова інформація від викладача"></i>' : ''}
                                 </div>
                                 <div class="l-footer">
                                     <div class="l-details">
-                                        <div class="l-row"><i class="fa-solid fa-user-tie"></i> ${lesson.teacher}</div>
+                                        <div class="l-row clickable" onclick="event.stopPropagation(); activateHighlight('teacher', '${safeTeacher}', event)"><i class="fa-solid fa-user-tie"></i> ${lesson.teacher}</div>
                                         <div class="l-row"><i class="fa-solid fa-location-dot"></i> ${roomDisplay}</div>
                                         ${deptName ? `<div class="l-row" style="font-size:0.75rem; color:var(--text-muted);"><i class="fa-solid fa-building" style="opacity:0.5;"></i> Кафедра: ${deptName}</div>` : ''}
                                     </div>
@@ -2006,6 +2111,60 @@
             document.getElementById('modalOverlay').classList.remove('open');
             document.body.style.overflow = '';
         }
+
+        // ==========================================
+        // ШВИДКІ ФІЛЬТРИ
+        // ==========================================
+        
+        let highlightState = { active: false, type: null, value: null };
+        
+        function activateHighlight(type, val, e) {
+            if (e) e.stopPropagation();
+            if (!val) return;
+            
+            highlightState = { active: true, type, value: val };
+            document.body.classList.add('spotlight-active');
+            
+            const panel = document.getElementById('filter-panel');
+            panel.innerHTML = `<span id="filter-msg"><i class="fa-solid fa-filter"></i> ${val}</span><button onclick="clearHighlight()">Скинути (Esc)</button>`;
+            panel.classList.add('show');
+            
+            reapplyHighlight();
+        }
+        
+        function reapplyHighlight() {
+            document.querySelectorAll('.lesson-card').forEach(card => {
+                card.classList.remove('highlighted');
+                let match = false;
+                
+                if (highlightState.type === 'subject' && card.dataset.subject === highlightState.value) {
+                    match = true;
+                }
+                if (highlightState.type === 'teacher' && card.dataset.teacher === highlightState.value) {
+                    match = true;
+                }
+                
+                if (match) {
+                    card.classList.add('highlighted');
+                }
+            });
+        }
+        
+        function clearHighlight() {
+            highlightState = { active: false, type: null, value: null };
+            document.body.classList.remove('spotlight-active');
+            document.getElementById('filter-panel').classList.remove('show');
+            document.querySelectorAll('.lesson-card').forEach(card => {
+                card.classList.remove('highlighted');
+            });
+        }
+        
+        // Обробка Escape для закриття фільтра
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && highlightState.active) {
+                clearHighlight();
+            }
+        });
     </script>
 </body>
 </html>

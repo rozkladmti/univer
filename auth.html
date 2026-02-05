@@ -52,16 +52,6 @@
             display: none;
         }
         
-        .info {
-            background: #dbeafe;
-            color: #1e40af;
-            padding: 1rem;
-            border-radius: 8px;
-            margin-bottom: 1rem;
-            font-size: 0.9rem;
-            line-height: 1.5;
-        }
-        
         .loading {
             display: none;
             margin-top: 1rem;
@@ -81,10 +71,6 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
-        
-        .g_id_signin {
-            margin: 0 auto;
-        }
     </style>
 </head>
 <body>
@@ -95,15 +81,6 @@
         
         <div id="error" class="error"></div>
         
-        <!-- Інформаційне повідомлення -->
-        <div class="info">
-            ⚠️ Перед першим використанням:<br>
-            1. Створіть аркуш "Users" у Google Sheets<br>
-            2. Додайте свій email з роллю 'admin'<br>
-            3. Замініть YOUR_CLIENT_ID нижче
-        </div>
-        
-        <!-- Google Sign-In Button -->
         <div id="g_id_onload"
              data-client_id="603262964237-43b87sf49pc47icl2j4qi40v3br7q9qj.apps.googleusercontent.com"
              data-callback="handleCredentialResponse"
@@ -126,65 +103,55 @@
     </div>
 
     <script>
-        // ==========================================
-        // НАЛАШТУВАННЯ - ЗАМІНІТЬ ЦІ ЗНАЧЕННЯ!
-        // ==========================================
-        
-        // 1. Отримайте URL після публікації Apps Script (Deploy > New deployment > Web app)
+        // ЗАМІНІТЬ ЦЕ НА ВАШ РЕАЛЬНИЙ URL!
         const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw2JJ7cW-nsQP5D9MhjltKd8jX9bZSkn_nMMlTqeWFpxEm29So-PgA2LRMN5b-qpquw/exec';
-        
-        // 2. Client ID отримайте з Google Cloud Console
-        // const CLIENT_ID вже вказаний у data-client_id вище
-        
-        // ==========================================
         
         function handleCredentialResponse(response) {
             const idToken = response.credential;
             
-            // Показуємо завантаження
             document.getElementById('loading').style.display = 'block';
             document.getElementById('error').style.display = 'none';
             
-            // Розшифровуємо JWT токен (базова інформація)
             const payload = parseJwt(idToken);
             const email = payload.email;
             
             console.log('Спроба авторизації:', email);
             
-            // Відправляємо запит на сервер для перевірки ролі
-            fetch(SCRIPT_URL + '?action=verify', {
-                method: 'GET',
-                headers: {
-                    'Authorization': 'Bearer ' + idToken
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
+            // Використовуємо JSONP для уникнення CORS
+            const callbackName = 'authCallback_' + Date.now();
+            
+            window[callbackName] = function(data) {
                 console.log('Відповідь сервера:', data);
                 
                 if (data.result === 'success' && data.user.authenticated) {
-                    // Зберігаємо токен та інфо про користувача
                     localStorage.setItem('authToken', idToken);
                     localStorage.setItem('userEmail', email);
                     localStorage.setItem('userRole', data.user.role);
                     localStorage.setItem('userName', data.user.name);
                     
                     console.log('Авторизація успішна. Роль:', data.user.role);
-                    
-                    // Перенаправляємо на відповідну сторінку
                     redirectByRole(data.user.role);
                 } else {
                     showError(data.message || 'Доступ заборонено. Зверніться до адміністратора.');
-                    console.error('Авторизація відхилена:', data);
                 }
-            })
-            .catch(error => {
-                console.error('Помилка авторизації:', error);
-                showError('Помилка з\'єднання з сервером. Перевірте: \n1. Чи правильний SCRIPT_URL\n2. Чи опублікований Apps Script\n3. Чи створений аркуш Users');
-            })
-            .finally(() => {
+                
                 document.getElementById('loading').style.display = 'none';
-            });
+                delete window[callbackName];
+                if (script.parentNode) {
+                    script.parentNode.removeChild(script);
+                }
+            };
+            
+            const script = document.createElement('script');
+            script.src = SCRIPT_URL + '?action=verify&email=' + encodeURIComponent(email) + '&callback=' + callbackName;
+            script.onerror = function() {
+                console.error('Помилка завантаження скрипту');
+                showError('Помилка з\'єднання. Перевірте SCRIPT_URL');
+                document.getElementById('loading').style.display = 'none';
+                delete window[callbackName];
+            };
+            
+            document.head.appendChild(script);
         }
         
         function parseJwt(token) {
@@ -226,46 +193,27 @@
             errorDiv.style.display = 'block';
         }
         
-        // Перевірка чи користувач вже авторизований
         window.onload = function() {
             const token = localStorage.getItem('authToken');
             const role = localStorage.getItem('userRole');
             
-            console.log('Перевірка існуючої сесії...');
-            
             if (token && role) {
-                console.log('Знайдена існуюча сесія для ролі:', role);
-                // Якщо є токен - перевіряємо його валідність
-                checkTokenValidity(token, role);
-            } else {
-                console.log('Сесія не знайдена. Очікування авторизації...');
-            }
-        };
-        
-        function checkTokenValidity(token, role) {
-            try {
-                const payload = parseJwt(token);
-                const now = Date.now() / 1000;
-                
-                if (payload.exp && payload.exp > now) {
-                    // Токен ще дійсний - перенаправляємо
-                    console.log('Токен валідний. Автоматичний редірект...');
-                    redirectByRole(role);
-                } else {
-                    // Токен застарів - очищаємо
-                    console.log('Токен застарів. Очищення сесії...');
+                try {
+                    const payload = parseJwt(token);
+                    const now = Date.now() / 1000;
+                    
+                    if (payload.exp && payload.exp > now) {
+                        console.log('Токен валідний. Автоматичний редірект...');
+                        redirectByRole(role);
+                    } else {
+                        console.log('Токен застарів. Очищення...');
+                        localStorage.clear();
+                    }
+                } catch (e) {
                     localStorage.clear();
                 }
-            } catch (e) {
-                console.error('Помилка перевірки токену:', e);
-                localStorage.clear();
             }
-        }
-        
-        // Додаткова діагностика
-        console.log('=== AUTH.HTML ІНІЦІАЛІЗАЦІЯ ===');
-        console.log('SCRIPT_URL:', SCRIPT_URL);
-        console.log('Перевірте що URL не містить YOUR_SCRIPT_ID');
+        };
     </script>
 </body>
 </html>

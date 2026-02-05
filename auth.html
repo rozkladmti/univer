@@ -82,7 +82,7 @@
         <div id="error" class="error"></div>
         
         <div id="g_id_onload"
-             data-client_id="603262964237-43b87sf49pc47icl2j4qi40v3br7q9qj.apps.googleusercontent.com"
+             data-client_id="427131114713-ltulnr1ov7qk0lhjvrcqt9b0pcr93gch.apps.googleusercontent.com"
              data-callback="handleCredentialResponse"
              data-auto_prompt="false">
         </div>
@@ -103,8 +103,7 @@
     </div>
 
     <script>
-        // ЗАМІНІТЬ ЦЕ НА ВАШ РЕАЛЬНИЙ URL!
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw2JJ7cW-nsQP5D9MhjltKd8jX9bZSkn_nMMlTqeWFpxEm29So-PgA2LRMN5b-qpquw/exec';
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz8VIU_KuG5OvLVmPs3bVy46zCEV-4tvxaOIp9wYiAdS8JDu4LEqtWBHmsOfi4JuxWT/exec';
         
         function handleCredentialResponse(response) {
             const idToken = response.credential;
@@ -117,13 +116,13 @@
             
             console.log('Спроба авторизації:', email);
             
-            // Використовуємо JSONP для уникнення CORS
+            // JSONP замість fetch
             const callbackName = 'authCallback_' + Date.now();
             
             window[callbackName] = function(data) {
                 console.log('Відповідь сервера:', data);
                 
-                if (data.result === 'success' && data.user.authenticated) {
+                if (data.result === 'success' && data.user && data.user.authenticated) {
                     localStorage.setItem('authToken', idToken);
                     localStorage.setItem('userEmail', email);
                     localStorage.setItem('userRole', data.user.role);
@@ -132,12 +131,12 @@
                     console.log('Авторизація успішна. Роль:', data.user.role);
                     redirectByRole(data.user.role);
                 } else {
-                    showError(data.message || 'Доступ заборонено. Зверніться до адміністратора.');
+                    showError(data.message || 'Доступ заборонено');
                 }
                 
                 document.getElementById('loading').style.display = 'none';
                 delete window[callbackName];
-                if (script.parentNode) {
+                if (script && script.parentNode) {
                     script.parentNode.removeChild(script);
                 }
             };
@@ -145,8 +144,8 @@
             const script = document.createElement('script');
             script.src = SCRIPT_URL + '?action=verify&email=' + encodeURIComponent(email) + '&callback=' + callbackName;
             script.onerror = function() {
-                console.error('Помилка завантаження скрипту');
-                showError('Помилка з\'єднання. Перевірте SCRIPT_URL');
+                console.error('Помилка завантаження');
+                showError('Помилка з\'єднання');
                 document.getElementById('loading').style.display = 'none';
                 delete window[callbackName];
             };
@@ -161,17 +160,14 @@
                 const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
                     return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
                 }).join(''));
-                
                 return JSON.parse(jsonPayload);
             } catch (e) {
-                console.error('Помилка парсингу JWT:', e);
+                console.error('Помилка JWT:', e);
                 return {};
             }
         }
         
         function redirectByRole(role) {
-            console.log('Редірект на сторінку для ролі:', role);
-            
             switch(role) {
                 case 'admin':
                     window.location.href = 'admin.html';
@@ -183,14 +179,13 @@
                     window.location.href = 'student.html';
                     break;
                 default:
-                    showError('Невідома роль користувача: ' + role);
+                    showError('Невідома роль: ' + role);
             }
         }
         
         function showError(message) {
-            const errorDiv = document.getElementById('error');
-            errorDiv.textContent = message;
-            errorDiv.style.display = 'block';
+            document.getElementById('error').textContent = message;
+            document.getElementById('error').style.display = 'block';
         }
         
         window.onload = function() {
@@ -203,10 +198,8 @@
                     const now = Date.now() / 1000;
                     
                     if (payload.exp && payload.exp > now) {
-                        console.log('Токен валідний. Автоматичний редірект...');
                         redirectByRole(role);
                     } else {
-                        console.log('Токен застарів. Очищення...');
                         localStorage.clear();
                     }
                 } catch (e) {

@@ -27,21 +27,9 @@
             text-align: center;
         }
         
-        .logo {
-            font-size: 4rem;
-            margin-bottom: 1rem;
-        }
-        
-        h1 {
-            color: #1e293b;
-            margin-bottom: 0.5rem;
-            font-size: 1.8rem;
-        }
-        
-        p {
-            color: #64748b;
-            margin-bottom: 2rem;
-        }
+        .logo { font-size: 4rem; margin-bottom: 1rem; }
+        h1 { color: #1e293b; margin-bottom: 0.5rem; font-size: 1.8rem; }
+        p { color: #64748b; margin-bottom: 2rem; }
         
         .error {
             background: #fee2e2;
@@ -52,10 +40,7 @@
             display: none;
         }
         
-        .loading {
-            display: none;
-            margin-top: 1rem;
-        }
+        .loading { display: none; margin-top: 1rem; }
         
         .spinner {
             border: 3px solid #f3f4f6;
@@ -103,7 +88,7 @@
     </div>
 
     <script>
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz2ALkQFVn58wdX-Om0q0Yjf17U1jGR_Oi_tk7jHbhOrMGNsgWc2pZc4Exta-7699R6/exec';
+        const SCRIPT_URL = window.location.href.split('?')[0];
         
         function handleCredentialResponse(response) {
             const idToken = response.credential;
@@ -114,12 +99,12 @@
             const payload = parseJwt(idToken);
             const email = payload.email;
             
-            console.log('Спроба авторизації:', email);
+            console.log('Авторизація:', email);
             
             const callbackName = 'authCallback_' + Date.now();
             
             window[callbackName] = function(data) {
-                console.log('Відповідь сервера:', data);
+                console.log('Відповідь:', data);
                 
                 if (data.result === 'success' && data.user && data.user.authenticated) {
                     localStorage.setItem('authToken', idToken);
@@ -127,7 +112,6 @@
                     localStorage.setItem('userRole', data.user.role);
                     localStorage.setItem('userName', data.user.name);
                     
-                    console.log('Авторизація успішна. Роль:', data.user.role);
                     redirectByRole(data.user.role);
                 } else {
                     showError(data.message || 'Доступ заборонено');
@@ -135,15 +119,12 @@
                 
                 document.getElementById('loading').style.display = 'none';
                 delete window[callbackName];
-                if (script && script.parentNode) {
-                    script.parentNode.removeChild(script);
-                }
+                if (script && script.parentNode) script.parentNode.removeChild(script);
             };
             
             const script = document.createElement('script');
             script.src = SCRIPT_URL + '?action=verify&email=' + encodeURIComponent(email) + '&callback=' + callbackName;
             script.onerror = function() {
-                console.error('Помилка завантаження');
                 showError('Помилка з\'єднання');
                 document.getElementById('loading').style.display = 'none';
                 delete window[callbackName];
@@ -156,30 +137,18 @@
             try {
                 const base64Url = token.split('.')[1];
                 const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-                const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
-                    return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-                }).join(''));
+                const jsonPayload = decodeURIComponent(atob(base64).split('').map(c => 
+                    '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)
+                ).join(''));
                 return JSON.parse(jsonPayload);
             } catch (e) {
-                console.error('Помилка JWT:', e);
                 return {};
             }
         }
         
         function redirectByRole(role) {
-            switch(role) {
-                case 'admin':
-                    window.location.href = 'admin.html';
-                    break;
-                case 'teacher':
-                    window.location.href = 'teacher.html';
-                    break;
-                case 'student':
-                    window.location.href = 'student.html';
-                    break;
-                default:
-                    showError('Невідома роль: ' + role);
-            }
+            const base = window.location.href.split('?')[0];
+            window.location.href = base + '?page=' + role;
         }
         
         function showError(message) {

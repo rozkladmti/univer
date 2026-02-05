@@ -82,7 +82,7 @@
         <div id="error" class="error"></div>
         
         <div id="g_id_onload"
-             data-client_id="603262964237-43b87sf49pc47icl2j4qi40v3br7q9qj.apps.googleusercontent.com"
+             data-client_id="427131114713-hpd4uh5iho0iuq0apu0i1uq5s4aqv6cj.apps.googleusercontent.com"
              data-callback="handleCredentialResponse"
              data-auto_prompt="false">
         </div>
@@ -116,7 +116,6 @@
             
             console.log('Спроба авторизації:', email);
             
-            // JSONP замість fetch
             const callbackName = 'authCallback_' + Date.now();
             
             window[callbackName] = function(data) {

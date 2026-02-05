@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Вхід у систему</title>
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    
+    <style>
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0;
+        }
+        
+        .login-container {
+            background: white;
+            border-radius: 20px;
+            padding: 3rem;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+        }
+        
+        .logo {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+        
+        h1 {
+            color: #1e293b;
+            margin-bottom: 0.5rem;
+            font-size: 1.8rem;
+        }
+        
+        p {
+            color: #64748b;
+            margin-bottom: 2rem;
+        }
+        
+        .error {
+            background: #fee2e2;
+            color: #991b1b;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            display: none;
+        }
+        
+        .info {
+            background: #dbeafe;
+            color: #1e40af;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+        
+        .loading {
+            display: none;
+            margin-top: 1rem;
+        }
+        
+        .spinner {
+            border: 3px solid #f3f4f6;
+            border-top: 3px solid #3b82f6;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .g_id_signin {
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="logo">🎓</div>
+        <h1>Система розкладу</h1>
+        <p>Увійдіть за допомогою Google акаунту</p>
+        
+        <div id="error" class="error"></div>
+        
+        <!-- Інформаційне повідомлення -->
+        <div class="info">
+            ⚠️ Перед першим використанням:<br>
+            1. Створіть аркуш "Users" у Google Sheets<br>
+            2. Додайте свій email з роллю 'admin'<br>
+            3. Замініть YOUR_CLIENT_ID нижче
+        </div>
+        
+        <!-- Google Sign-In Button -->
+        <div id="g_id_onload"
+             data-client_id="603262964237-43b87sf49pc47icl2j4qi40v3br7q9qj.apps.googleusercontent.com"
+             data-callback="handleCredentialResponse"
+             data-auto_prompt="false">
+        </div>
+        
+        <div class="g_id_signin"
+             data-type="standard"
+             data-size="large"
+             data-theme="outline"
+             data-text="signin_with"
+             data-shape="rectangular"
+             data-logo_alignment="left">
+        </div>
+        
+        <div id="loading" class="loading">
+            <div class="spinner"></div>
+            <p>Перевірка доступу...</p>
+        </div>
+    </div>
+
+    <script>
+        // ==========================================
+        // НАЛАШТУВАННЯ - ЗАМІНІТЬ ЦІ ЗНАЧЕННЯ!
+        // ==========================================
+        
+        // 1. Отримайте URL після публікації Apps Script (Deploy > New deployment > Web app)
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx2KoOb0WtvF0XWVGe906fl7G3MK85q4WItwPSm8YeQ6hMFwUXh9CmepF6wc-JsKPvH/exec';
+        
+        // 2. Client ID отримайте з Google Cloud Console
+        // const CLIENT_ID вже вказаний у data-client_id вище
+        
+        // ==========================================
+        
+        function handleCredentialResponse(response) {
+            const idToken = response.credential;
+            
+            // Показуємо завантаження
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('error').style.display = 'none';
+            
+            // Розшифровуємо JWT токен (базова інформація)
+            const payload = parseJwt(idToken);
+            const email = payload.email;
+            
+            console.log('Спроба авторизації:', email);
+            
+            // Відправляємо запит на сервер для перевірки ролі
+            fetch(SCRIPT_URL + '?action=verify', {
+                method: 'GET',
+                headers: {
+                    'Authorization': 'Bearer ' + idToken
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Відповідь сервера:', data);
+                
+                if (data.result === 'success' && data.user.authenticated) {
+                    // Зберігаємо токен та інфо про користувача
+                    localStorage.setItem('authToken', idToken);
+                    localStorage.setItem('userEmail', email);
+                    localStorage.setItem('userRole', data.user.role);
+                    localStorage.setItem('userName', data.user.name);
+                    
+                    console.log('Авторизація успішна. Роль:', data.user.role);
+                    
+                    // Перенаправляємо на відповідну сторінку
+                    redirectByRole(data.user.role);
+                } else {
+                    showError(data.message || 'Доступ заборонено. Зверніться до адміністратора.');
+                    console.error('Авторизація відхилена:', data);
+                }
+            })
+            .catch(error => {
+                console.error('Помилка авторизації:', error);
+                showError('Помилка з\'єднання з сервером. Перевірте: \n1. Чи правильний SCRIPT_URL\n2. Чи опублікований Apps Script\n3. Чи створений аркуш Users');
+            })
+            .finally(() => {
+                document.getElementById('loading').style.display = 'none';
+            });
+        }
+        
+        function parseJwt(token) {
+            try {
+                const base64Url = token.split('.')[1];
+                const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+                const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+                    return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+                }).join(''));
+                
+                return JSON.parse(jsonPayload);
+            } catch (e) {
+                console.error('Помилка парсингу JWT:', e);
+                return {};
+            }
+        }
+        
+        function redirectByRole(role) {
+            console.log('Редірект на сторінку для ролі:', role);
+            
+            switch(role) {
+                case 'admin':
+                    window.location.href = 'admin.html';
+                    break;
+                case 'teacher':
+                    window.location.href = 'teacher.html';
+                    break;
+                case 'student':
+                    window.location.href = 'student.html';
+                    break;
+                default:
+                    showError('Невідома роль користувача: ' + role);
+            }
+        }
+        
+        function showError(message) {
+            const errorDiv = document.getElementById('error');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+        }
+        
+        // Перевірка чи користувач вже авторизований
+        window.onload = function() {
+            const token = localStorage.getItem('authToken');
+            const role = localStorage.getItem('userRole');
+            
+            console.log('Перевірка існуючої сесії...');
+            
+            if (token && role) {
+                console.log('Знайдена існуюча сесія для ролі:', role);
+                // Якщо є токен - перевіряємо його валідність
+                checkTokenValidity(token, role);
+            } else {
+                console.log('Сесія не знайдена. Очікування авторизації...');
+            }
+        };
+        
+        function checkTokenValidity(token, role) {
+            try {
+                const payload = parseJwt(token);
+                const now = Date.now() / 1000;
+                
+                if (payload.exp && payload.exp > now) {
+                    // Токен ще дійсний - перенаправляємо
+                    console.log('Токен валідний. Автоматичний редірект...');
+                    redirectByRole(role);
+                } else {
+                    // Токен застарів - очищаємо
+                    console.log('Токен застарів. Очищення сесії...');
+                    localStorage.clear();
+                }
+            } catch (e) {
+                console.error('Помилка перевірки токену:', e);
+                localStorage.clear();
+            }
+        }
+        
+        // Додаткова діагностика
+        console.log('=== AUTH.HTML ІНІЦІАЛІЗАЦІЯ ===');
+        console.log('SCRIPT_URL:', SCRIPT_URL);
+        console.log('Перевірте що URL не містить YOUR_SCRIPT_ID');
+    </script>
+</body>
+</html>

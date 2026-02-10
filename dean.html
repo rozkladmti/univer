@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="mobile-web-app-capable" content="yes">
+
+    <title>Деканат - Розклад ЛНУВМБ</title>
+    
+    <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="css/admin-styles.css">
+    <style>
+        /* Приховуємо розклад поки loader активний */
+        #schedule-container {
+            display: none;
+        }
+        
+        .global-loader.hidden ~ #schedule-container {
+            display: grid;
+        }
+    </style>
+</head>
+<body>
+    <!-- Глобальний лоадер з прогрес-баром і скелетоном -->
+    <div id="global-loader" class="global-loader hidden">
+        <div class="global-loader-header">
+            <i class="fa-solid fa-graduation-cap"></i>
+            <span>Завантаження розкладу</span>
+        </div>
+        <div id="global-loader-subtitle" class="global-loader-subtitle">Підключення до Google Таблиць…</div>
+        <div class="global-loader-bar">
+            <div class="global-loader-bar-fill"></div>
+        </div>
+        <div class="global-loader-skeleton">
+            <div class="global-loader-skeleton-day">
+                <div class="global-loader-skeleton-day-header"></div>
+                <div class="global-loader-skeleton-slot"></div>
+                <div class="global-loader-skeleton-slot"></div>
+                <div class="global-loader-skeleton-slot"></div>
+                <div class="global-loader-skeleton-slot"></div>
+            </div>
+            <div class="global-loader-skeleton-day">
+                <div class="global-loader-skeleton-day-header"></div>
+                <div class="global-loader-skeleton-slot"></div>
+                <div class="global-loader-skeleton-slot"></div>
+                <div class="global-loader-skeleton-slot"></div>
+                <div class="global-loader-skeleton-slot"></div>
+            </div>
+            <div class="global-loader-skeleton-day">
+                <div class="global-loader-skeleton-day-header"></div>
+                <div class="global-loader-skeleton-slot"></div>
+                <div class="global-loader-skeleton-slot"></div>
+                <div class="global-loader-skeleton-slot"></div>
+                <div class="global-loader-skeleton-slot"></div>
+            </div>
+            <div class="global-loader-skeleton-day">
+                <div class="global-loader-skeleton-day-header"></div>
+                <div class="global-loader-skeleton-slot"></div>
+                <div class="global-loader-skeleton-slot"></div>
+                <div class="global-loader-skeleton-slot"></div>
+                <div class="global-loader-skeleton-slot"></div>
+            </div>
+            <div class="global-loader-skeleton-day">
+                <div class="global-loader-skeleton-day-header"></div>
+                <div class="global-loader-skeleton-slot"></div>
+                <div class="global-loader-skeleton-slot"></div>
+                <div class="global-loader-skeleton-slot"></div>
+                <div class="global-loader-skeleton-slot"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Верхня панель -->
+    <div class="top-bar">
+        <!-- Перший рядок -->
+        <div class="top-bar-row first">
+            <div class="header-left">
+                <h2>🎓 Деканат - <span id="facultyName">Завантаження...</span></h2>
+                <div class="status-badge st-guest">
+                    <i class="fa-solid fa-eye"></i> Тільки перегляд
+                </div>
+                <div id="cloudStatus" class="cloud-status status-saved" title="Статус синхронізації">
+                    <i class="fa-solid fa-cloud-check"></i> <span>Готово</span>
+                </div>
+            </div>
+            
+            <div class="week-switcher">
+                <button class="week-btn active" id="btn-week-1" onclick="setWeek(1)">Тиждень I</button>
+                <button class="week-btn" id="btn-week-2" onclick="setWeek(2)">Тиждень II</button>
+            </div>
+        </div>
+        
+        <!-- Другий рядок -->
+        <div class="top-bar-row second">
+            <div class="controls-left">
+                <select id="departmentSelect" onchange="selectDepartmentFromDropdown()" class="form-input" style="padding: 8px 12px; font-size: 14px; min-width: 200px;">
+                    <option value="ALL">📚 Всі кафедри</option>
+                    <!-- Заповнюється JS -->
+                </select>
+            </div>
+            <div class="controls-right">
+                <button class="btn-sync" id="reloadBtn" onclick="reloadAll()" title="Оновити">
+                    <i class="fa-solid fa-rotate"></i> Оновити
+                </button>
+                <button class="btn-sync btn-export" onclick="exportToExcel()" title="Експорт в Excel" style="color: #059669; border-color: #a7f3d0; background: #d1fae5;"><i class="fa-solid fa-file-excel"></i></button>
+                <button class="btn-sync btn-export" onclick="exportToImage()" title="Експорт в PNG"><i class="fa-solid fa-camera"></i></button>
+                <button class="btn-sync" id="filterBtn" onclick="toggleAdvancedSearch()" title="Пошук та фільтри">
+                    <i class="fa-solid fa-filter"></i> Фільтри
+                </button>
+                <button class="btn-sync" onclick="openHelp()" title="Допомога">
+                    <i class="fa-solid fa-circle-question"></i> Допомога
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Панель поточного тижня -->
+    <div class="current-week-indicator" id="currentWeekIndicator">
+        <i class="fa-solid fa-calendar-week"></i>
+        <span id="currentWeekText">Поточний тиждень: I</span>
+    </div>
+
+    <!-- Основний контейнер розкладу -->
+    <div class="schedule-grid" id="schedule-container">
+        <div id="week-watermark">1</div>
+        <div class="day-column" id="day-1"><div class="day-header">Понеділок</div></div>
+        <div class="day-column" id="day-2"><div class="day-header">Вівторок</div></div>
+        <div class="day-column" id="day-3"><div class="day-header">Середа</div></div>
+        <div class="day-column" id="day-4"><div class="day-header">Четвер</div></div>
+        <div class="day-column" id="day-5"><div class="day-header">П'ятниця</div></div>
+    </div>
+
+    <!-- Модальне вікно: Розширений пошук -->
+    <div class="modal-overlay" id="advancedSearchModal">
+        <div class="modal-box" style="width: 450px;">
+            <div class="modal-header">🔍 Розширений пошук</div>
+            
+            <div class="form-group">
+                <label class="form-label">Кафедра</label>
+                <select class="form-input" id="advSearchDepartment">
+                    <option value="">Всі кафедри</option>
+                    <!-- Заповнюється JS -->
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Викладач</label>
+                <input class="form-input" type="text" id="advSearchTeacher" list="teachersList" placeholder="Всі викладачі">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Група</label>
+                <input class="form-input" type="text" id="advSearchGroup" list="groupsList" placeholder="Всі групи">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Предмет</label>
+                <input class="form-input" type="text" id="advSearchSubject" list="subjectsList" placeholder="Всі предмети">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Тип заняття</label>
+                <select class="form-input" id="advSearchType">
+                    <option value="">Всі типи</option>
+                    <option value="Лекція">Лекція</option>
+                    <option value="Лабораторна">Лабораторна</option>
+                    <option value="Практична">Практична</option>
+                    <option value="Семінар">Семінар</option>
+                </select>
+            </div>
+
+            <div class="modal-actions">
+                <button class="btn btn-secondary" onclick="closeAdvancedSearch()">Скасувати</button>
+                <button class="btn btn-primary" onclick="applyAdvancedSearch()">Застосувати</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Datalists -->
+    <datalist id="teachersList"></datalist>
+    <datalist id="groupsList"></datalist>
+    <datalist id="subjectsList"></datalist>
+    <datalist id="roomsList"></datalist>
+
+    <!-- Модальне вікно: Допомога -->
+    <div class="modal-overlay" id="helpModal">
+        <div class="modal-box" style="width: 600px; max-height: 80vh; overflow-y: auto;">
+            <div class="modal-header">💡 Довідка</div>
+            <div style="padding: 20px; line-height: 1.6;">
+                <h3 style="margin-top: 0;">Панель декана факультету</h3>
+                <p>Цей інтерфейс дозволяє переглядати розклад занять всіх кафедр вашого факультету.</p>
+
+                <h4 style="margin-top: 1.5rem;">🔍 Можливості:</h4>
+                <ul>
+                    <li><strong>Перегляд розкладу</strong> всіх кафедр або окремої кафедри</li>
+                    <li><strong>Фільтрація</strong> по викладачах, групах, предметах, днях</li>
+                    <li><strong>Експорт в Excel</strong> для друку та аналізу</li>
+                    <li><strong>Експорт в PNG</strong> для швидкого збереження</li>
+                    <li><strong>Перемикання тижнів</strong> (I/II) для планування</li>
+                </ul>
+
+                <h4 style="margin-top: 1.5rem;">📌 Підказки:</h4>
+                <ul>
+                    <li>Оберіть кафедру зі списку для фільтрації розкладу</li>
+                    <li>"Всі кафедри" показує зведений розклад факультету</li>
+                    <li>Кнопка <span style="color: #3b82f6;"><i class="fa-solid fa-filter"></i> Фільтри</span> - розширений пошук пар</li>
+                    <li>Кнопка <span style="color: #059669;"><i class="fa-solid fa-file-excel"></i></span> - експорт обох тижнів в Excel</li>
+                    <li>Кнопка <i class="fa-solid fa-camera"></i> - скріншот поточного тижня</li>
+                    <li>Натиснувши <span style="color: #f59e0b;"><i class="fa-solid fa-filter"></i> Скинути</span> можна очистити всі фільтри</li>
+                </ul>
+
+                <h4 style="margin-top: 1.5rem;">⚠️ Зверніть увагу:</h4>
+                <p style="background: #fef3c7; padding: 12px; border-radius: 6px; border-left: 4px solid #f59e0b;">
+                    <i class="fa-solid fa-eye"></i> <strong>Режим "Тільки перегляд"</strong><br>
+                    Ви можете переглядати та експортувати розклад, але не можете його редагувати. Для внесення змін зверніться до адміністратора системи.
+                </p>
+
+                <div style="margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid #e2e8f0;">
+                    <p style="font-size: 0.85rem; color: #64748b;">
+                        <strong>Версія:</strong> 2.0 | <strong>Оновлено:</strong> Лютий 2026
+                    </p>
+                    <p style="margin: 0.8rem 0 0 0; font-size: 0.8rem; color: #64748b;">
+                        © 2026 Кафедра Менеджменту ІТ-сфери ЛНУВМБ імені С.З. Гжицького
+                    </p>
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-primary" onclick="closeHelp()">Зрозуміло!</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Кастомний Alert -->
+    <div class="modal-overlay" id="customAlertModal">
+        <div class="modal-box" style="max-width: 450px; animation: modalBounce 0.3s ease;">
+            <div id="customAlertIcon" style="text-align: center; font-size: 48px; margin: 20px 0 10px 0;">
+                <i class="fa-solid fa-circle-info" style="color: #3b82f6;"></i>
+            </div>
+            <div class="modal-header" id="customAlertTitle" style="text-align: center; font-size: 20px; padding: 10px 20px;">Повідомлення</div>
+            <div style="padding: 10px 30px 30px 30px; text-align: center; font-size: 15px; line-height: 1.6; color: #475569;" id="customAlertMessage"></div>
+            <div class="modal-actions" id="customAlertActions" style="gap: 10px; padding: 0 20px 20px 20px;">
+                <button class="btn btn-primary" onclick="closeCustomAlert(true)" style="min-width: 100px;">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/shared-config.js"></script>
+    <script src="js/config-dean.js"></script>
+    <script src="js/dean-script.js"></script>
+</body>
+</html>

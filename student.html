@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <!--
+    Система управління розкладом Університету
+    Розробник: Ігор Рамський (ramskij@gmail.com)
+    © 2026 Всі права захищені
+    -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Розклад студента</title>
+    
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+
+    <link rel="stylesheet" href="css/student-styles.css">
+</head>
+<body>
+    <!-- Панель швидкого фільтра -->
+    <div id="filter-panel">
+        <span id="filter-msg"><i class="fa-solid fa-filter"></i> Фільтр активний</span>
+        <button onclick="clearHighlight()">Скинути (Esc)</button>
+    </div>
+    
+    <div id="weekWatermark" class="watermark" aria-hidden="true"></div>
+
+    <header>
+        <div class="header-title" id="headerTitle" onclick="if(savedGroups.length > 0) toggleHeaderDropdown()">
+            <i class="fa-solid fa-graduation-cap" style="color:var(--primary)"></i>
+            <span id="headerGroupName">Розклад</span>
+            <i class="fa-solid fa-chevron-down" id="headerChevron" style="display: none;"></i>
+            <div class="header-dropdown" id="headerDropdown">
+                <div class="header-dropdown-empty">Немає збережених груп</div>
+            </div>
+        </div>
+        <div style="display: flex; align-items: center;">
+            <button class="btn-theme" id="themeToggle" onclick="toggleTheme()">
+                <i class="fa-solid fa-moon" id="themeIcon"></i>
+            </button>
+            <button class="btn-refresh" id="refreshBtn" onclick="fetchSchedule(true)">
+                <i class="fa-solid fa-arrows-rotate"></i>
+            </button>
+        </div>
+    </header>
+
+
+    <!-- Current week indicator -->
+    <div class="current-week-indicator" id="currentWeekIndicator" style="display: none;">
+        <i class="fa-solid fa-calendar-week"></i>
+        <span id="currentWeekText">Поточний тиждень: I</span>
+    </div>
+
+    <div class="controls-area">
+        <div class="select-wrapper">
+            <div class="group-search-container">
+                <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                <input 
+                    type="text" 
+                    id="groupSearch" 
+                    class="group-search-input" 
+                    placeholder="Пошук групи..."
+                    autocomplete="off"
+                />
+                <div class="search-dropdown" id="searchDropdown"></div>
+            </div>
+            <button class="btn-save-group" id="saveGroupBtn" onclick="toggleSaveGroup()" title="Зберегти групу">
+                <i class="fa-regular fa-star" id="saveGroupIcon"></i>
+            </button>
+        </div>
+
+        <div class="week-toggle">
+            <button class="week-btn active" id="btnWeek1" onclick="setWeek(1)">I тиждень</button>
+            <button class="week-btn" id="btnWeek2" onclick="setWeek(2)">II тиждень</button>
+        </div>
+    </div>
+
+    <div id="scheduleContainer" class="schedule-container">
+        <div class="empty-state">
+            <i class="fa-solid fa-cloud-arrow-down"></i>
+            <p>Завантажуємо дані...</p>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="modalOverlay" onclick="if(event.target===this) closeModal()">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-title">Деталі</div>
+                <button class="btn-close" onclick="closeModal()">&times;</button>
+            </div>
+            <div id="modalContent"></div>
+        </div>
+    </div>
+
+
+    <script src="js/shared-config.js"></script>
+    <script src="js/config-student.js"></script>
+    <script src="js/student-script.js"></script>
+</body>
+</html>

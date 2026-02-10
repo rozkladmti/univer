@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="mobile-web-app-capable" content="yes">
+
+    <title>Кафедра - Розклад ЛНУВМБ</title>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="css/admin-styles.css">
+</head>
+<body>
+    <!-- Глобальний лоадер з прогрес-баром і скелетоном -->
+    <div id="global-loader" class="global-loader hidden">
+        <div class="global-loader-header">
+            <i class="fa-solid fa-graduation-cap"></i>
+            <span>Завантаження розкладу</span>
+        </div>
+        <div id="global-loader-subtitle" class="global-loader-subtitle">Підключення до Google Таблиць…</div>
+        <div class="global-loader-bar">
+            <div class="global-loader-bar-fill"></div>
+        </div>
+        <div class="global-loader-skeleton">
+            <div class="global-loader-skeleton-day">
+                <div class="global-loader-skeleton-day-header"></div>
+                <div class="global-loader-skeleton-slot"></div>
+                <div class="global-loader-skeleton-slot"></div>
+                <div class="global-loader-skeleton-slot"></div>
+                <div class="global-loader-skeleton-slot"></div>
+            </div>
+            <div class="global-loader-skeleton-day">
+                <div class="global-loader-skeleton-day-header"></div>
+                <div class="global-loader-skeleton-slot"></div>
+                <div class="global-loader-skeleton-slot"></div>
+                <div class="global-loader-skeleton-slot"></div>
+                <div class="global-loader-skeleton-slot"></div>
+            </div>
+            <div class="global-loader-skeleton-day">
+                <div class="global-loader-skeleton-day-header"></div>
+                <div class="global-loader-skeleton-slot"></div>
+                <div class="global-loader-skeleton-slot"></div>
+                <div class="global-loader-skeleton-slot"></div>
+                <div class="global-loader-skeleton-slot"></div>
+            </div>
+            <div class="global-loader-skeleton-day">
+                <div class="global-loader-skeleton-day-header"></div>
+                <div class="global-loader-skeleton-slot"></div>
+                <div class="global-loader-skeleton-slot"></div>
+                <div class="global-loader-skeleton-slot"></div>
+                <div class="global-loader-skeleton-slot"></div>
+            </div>
+            <div class="global-loader-skeleton-day">
+                <div class="global-loader-skeleton-day-header"></div>
+                <div class="global-loader-skeleton-slot"></div>
+                <div class="global-loader-skeleton-slot"></div>
+                <div class="global-loader-skeleton-slot"></div>
+                <div class="global-loader-skeleton-slot"></div>
+            </div>
+        </div>
+    </div>
+    
+    <div id="compare-panel">
+        <div class="compare-header">
+            <div>
+                <i class="fa-solid fa-code-compare"></i>
+                <span>Обробка запитів</span>
+            </div>
+            <div class="compare-actions">
+                <button class="btn btn-secondary" style="padding:6px 12px; font-size:0.8rem;" onclick="exitCompare()">Закрити</button>
+                <button class="btn btn-success" style="padding:6px 12px; font-size:0.8rem;" onclick="saveMergedChanges()"><i class="fa-solid fa-check"></i> Зберегти оброблені зміни</button>
+            </div>
+        </div>
+        <div class="compare-legend">
+            <div class="leg-item"><div class="dot" style="background:#22c55e;"></div> Нове</div>
+            <div class="leg-item"><div class="dot" style="background:#f97316;"></div> Змінено</div>
+            <div class="leg-item"><div class="dot" style="background:#ef4444;"></div> Видалено</div>
+            <div>Необроблені залишаться в чернетці</div>
+        </div>
+    </div>
+
+    <div class="top-bar">
+        <!-- Перший рядок: Назва, статуси, перемикач тижнів -->
+        <div class="top-bar-row first">
+            <div class="header-left">
+                <h2><span id="departmentName"></span></h2>
+                <div id="role-badge" class="status-badge st-admin"><i class="fa-solid fa-user-shield"></i> Адмін кафедри</div>
+                <div id="draft-alert" class="status-badge" style="display:none; background:#fef9c3; color:#a16207; border:1px solid #facc15; cursor:pointer; gap:6px; padding:6px 10px;" onclick="startCompare()">
+                    <i class="fa-solid fa-bell"></i> 
+                    <span id="draft-alert-text">Запити:</span>
+                    <span id="draft-stats-inline" style="display:flex; gap:8px; font-size:11px; font-weight:600;">
+                        <!-- Заповнюється JS -->
+                    </span>
+                </div>
+                <div id="cloudStatus" class="cloud-status status-saved" title="Статус синхронізації">
+                    <i class="fa-solid fa-cloud-check"></i> <span>Готово</span>
+                </div>
+            </div>
+            
+            <div class="week-switcher">
+                <button class="week-btn active" id="btn-week-1" onclick="setWeek(1)">Тиждень I</button>
+                <button class="week-btn" id="btn-week-2" onclick="setWeek(2)">Тиждень II</button>
+            </div>
+            
+        </div>
+        
+        <!-- Другий рядок: Кнопки управління -->
+        <div class="top-bar-row second">
+            <div class="controls-right">
+
+                <div class="admin-controls">
+                    <button class="btn-sync" onclick="openTeachersModal()" title="Список викладачів кафедри та посилання на персональний розклад"><i class="fa-solid fa-user-group"></i> Викладачі</button>
+                    <button class="btn-sync" id="filterBtnAdmin" onclick="toggleAdvancedSearch()" title="Пошук та фільтри"><i class="fa-solid fa-filter"></i> Фільтри</button>
+                    <button class="btn-sync" onclick="openStats()" title="Статистика"><i class="fa-solid fa-chart-simple"></i></button>
+                    <button class="btn-sync" id="multiChoiceCancelBtn" onclick="toggleMultiChoiceMode()" style="display:none;"><i class="fa-solid fa-xmark"></i> Скасувати</button>
+                    <button class="btn-sync btn-manual-save" id="saveBtnDept" onclick="handleDepartmentSave()"><i class="fa-solid fa-floppy-disk"></i> Зберегти</button>
+                    <button class="btn-sync btn-backup" onclick="downloadBackup()" title="Резервна копія"><i class="fa-solid fa-download"></i></button>
+                    <label class="btn-sync btn-backup" title="Відновити" style="cursor: pointer;">
+                        <i class="fa-solid fa-upload"></i>
+                        <input type="file" id="fileInput" accept=".json" style="display: none;" onchange="uploadBackup(this)">
+                    </label>
+                    <button class="btn-sync" id="reloadBtnAdmin" onclick="reloadAll()" title="Оновити"><i class="fa-solid fa-rotate"></i></button>
+                </div>
+
+                <button class="btn-sync" id="loginBtn" onclick="showLogin()"><i class="fa-solid fa-lock"></i> Вхід</button>
+                
+                <button class="btn-sync" id="darkModeToggle" onclick="toggleDarkMode()" title="Темна тема">
+                    <i class="fa-solid fa-moon"></i>
+                </button>
+                <button class="btn-sync btn-export" onclick="exportToExcel()" title="Експорт в Excel" style="color: #059669; border-color: #a7f3d0; background: #d1fae5;"><i class="fa-solid fa-file-excel"></i></button>
+                <button class="btn-sync btn-export" onclick="exportToImage()" title="Експорт в PNG"><i class="fa-solid fa-camera"></i></button>
+                <button class="btn-sync" onclick="openHelp()" title="Допомога" style="color: #8b5cf6; border-color: #ddd6fe;"><i class="fa-solid fa-circle-question"></i></button>
+            </div>
+        </div>
+        
+        <div id="action-panel">
+            <span id="action-msg"></span>
+            <button class="panel-btn" onclick="cancelAction()">Скасувати</button>
+        </div>
+        
+        <div id="duplicate-panel">
+            <span><i class="fa-solid fa-copy"></i> <b>Дублювання:</b> <span id="duplicate-lesson-title"></span></span>
+            <button class="panel-btn" onclick="cancelDuplication()">Скасувати</button>
+        </div>
+        
+        <div id="filter-panel">
+            <span id="filter-msg"><i class="fa-solid fa-filter"></i> Фільтр</span>
+            <button class="panel-btn" onclick="clearHighlight()">Скинути (Esc)</button>
+        </div>
+    </div>
+    
+    <!-- Панель поточного тижня -->
+    <div class="current-week-indicator" id="currentWeekIndicator">
+        <i class="fa-solid fa-calendar-week"></i>
+        <span id="currentWeekText">Поточний тиждень: I</span>
+    </div>
+    
+    <div class="schedule-grid" id="schedule-container">
+        <div id="week-watermark">1</div>
+        <div class="day-column" id="day-1"><div class="day-header">Понеділок</div></div>
+        <div class="day-column" id="day-2"><div class="day-header">Вівторок</div></div>
+        <div class="day-column" id="day-3"><div class="day-header">Середа</div></div>
+        <div class="day-column" id="day-4"><div class="day-header">Четвер</div></div>
+        <div class="day-column" id="day-5"><div class="day-header">П'ятниця</div></div>
+    </div>
+
+    <!-- Мобільна нижня навігація (тільки перемикач тижнів) -->
+    <div class="mobile-bottom-nav" id="mobileBottomNav">
+        <button class="mobile-bottom-nav-btn active" id="bottom-week-1" onclick="setWeek(1)">
+            <i class="fa-solid fa-calendar-week"></i>
+            <span>I</span>
+        </button>
+        <button class="mobile-bottom-nav-btn" id="bottom-week-2" onclick="setWeek(2)">
+            <i class="fa-solid fa-calendar-week"></i>
+            <span>II</span>
+        </button>
+    </div>
+
+    <div class="modal-overlay" id="loginModal">
+        <div class="modal-box">
+            <div class="modal-header">Вхід для адміністратора</div>
+            <div class="form-group">
+                <input type="password" id="adminPass" class="form-input" placeholder="Введіть пароль" autocomplete="new-password">
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-secondary" onclick="closeLoginModal()">Скасувати</button>
+                <button class="btn btn-primary" onclick="processLogin()">Увійти</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="addModal">
+        <div class="modal-box">
+            <div class="modal-header" id="modalTitle">Пара</div>
+            <div class="form-group"><label class="form-label">Група</label><input class="form-input" type="text" id="inputGroup" list="groupsList" placeholder="МБА..."> <datalist id="groupsList"></datalist></div>
+            <div class="form-group"><label class="form-label">Дисципліна</label><input class="form-input" type="text" id="inputSubject" list="subjectsList" placeholder="Назва..."><datalist id="subjectsList"></datalist></div>
+            <div class="form-group"><label class="form-label">Тип</label><select class="form-input" id="inputType" onchange="toggleTeacher2()"><option value="Лекція">Лекція</option><option value="Лабораторна">Лабораторна</option><option value="Практична">Практична</option><option value="Семінар">Семінар</option></select></div>
+            <div class="form-group"><label class="form-label">Викладач</label><input class="form-input" type="text" id="inputTeacher" list="teachersList" placeholder="Прізвище..."><datalist id="teachersList"></datalist></div>
+            <div class="form-group" id="teacher2Group" style="display:none;"><label class="form-label">Другий викладач</label><input class="form-input" type="text" id="inputTeacher2" list="teachersList"></div>
+            <div class="form-group"><label class="form-label">Аудиторія</label><select class="form-input" id="inputRoomSelect" onchange="toggleCustomRoom()"></select><div id="customRoomGroup" style="display:none; margin-top:0.5rem;"><input class="form-input" type="text" id="inputRoomNumber" placeholder="Номер"></div></div>
+            <div class="form-group"><label class="form-label">Примітка</label><textarea class="form-input" id="inputNote" style="resize:vertical; min-height:50px;"></textarea></div>
+            <div class="modal-actions"><button class="btn btn-secondary" onclick="closeModal()">Закрити</button><button class="btn btn-primary" onclick="saveLesson()">Зберегти</button></div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="statsModal">
+        <div class="modal-box" style="width: 700px; max-width: 90vw;">
+            <div class="modal-header">Статистика (Тиждень <span id="statsWeekNum"></span>)</div>
+            
+            <div class="stats-tabs">
+                <button class="stats-tab active" onclick="switchStatsTab('general')">Загальне</button>
+                <button class="stats-tab" onclick="switchStatsTab('teachers')">Викладачі</button>
+                <button class="stats-tab" onclick="switchStatsTab('rooms')">Аудиторії</button>
+            </div>
+            
+            <div class="stats-container" id="statsContent"></div>
+            
+            <div class="modal-actions">
+                <button class="btn btn-secondary" onclick="closeStats()">Закрити</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальне вікно Допомога -->
+    <div class="modal-overlay" id="helpModal" onclick="if(event.target === this) closeHelp()">
+        <div class="modal-box" style="width: 800px; max-width: 95vw; max-height: 90vh; overflow-y: auto;">
+            <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center;">
+                <span>📚 Інструкція користувача</span>
+                <button class="btn btn-secondary" onclick="closeHelp()" style="padding: 0.4rem 0.8rem; font-size: 0.85rem;">✕</button>
+            </div>
+            
+            <div id="helpContent" style="font-size: 0.9rem; line-height: 1.6;">
+                <!-- Основні функції -->
+                <div class="help-section">
+                    <h3 class="help-title">🎯 Основні функції</h3>
+                    
+                    <div class="help-item">
+                        <div class="help-icon-group">
+                            <span class="help-icon">📅</span>
+                            <strong>Перемикання тижнів</strong>
+                        </div>
+                        <p>Використовуйте кнопки <strong>Тиждень I</strong> та <strong>Тиждень II</strong> для перегляду чисельника та знаменника.</p>
+                    </div>
+                    
+                    <div class="help-item">
+                        <div class="help-icon-group">
+                            <span class="help-icon">➕</span>
+                            <strong>Додавання пари</strong>
+                        </div>
+                        <p>Натисніть на порожній часовий слот (сіра область з "+") щоб додати нову пару.</p>
+                    </div>
+                    
+                    <div class="help-item">
+                        <div class="help-icon-group">
+                            <span class="help-icon">✏️</span>
+                            <strong>Редагування пари</strong>
+                        </div>
+                        <p>Натисніть на картку пари або використайте меню "⋮" → "Редагувати".</p>
+                    </div>
+                </div>
+
+                <!-- Режими роботи -->
+                <div class="help-section">
+                    <h3 class="help-title">👤 Режими роботи</h3>
+                    
+                    <div class="help-item">
+                        <div class="help-badge" style="background: #e2e8f0; color: #475569;">
+                            <i class="fa-solid fa-user"></i> Гість
+                        </div>
+                        <p><strong>Для викладачів:</strong> Перегляд розкладу, фільтрація та можливість запропонувати зміни адміну.</p>
+                    </div>
+                    
+                    <div class="help-item">
+                        <div class="help-badge" style="background: #dbeafe; color: #1e40af; border: 1px solid #93c5fd;">
+                            <i class="fa-solid fa-user-shield"></i> Адмін
+                        </div>
+                        <p><strong>Для адміністратора:</strong> Повний контроль – редагування, збереження, схвалення змін від викладачів.</p>
+                    </div>
+                </div>
+
+                <!-- Кнопки управління (Гість) -->
+                <div class="help-section">
+                    <h3 class="help-title">🔘 Кнопки управління (Режим Гість)</h3>
+                    
+                    <div class="help-buttons-grid">
+
+                        <div class="help-button-item">
+                            <span class="help-btn-demo"><i class="fa-solid fa-filter"></i></span>
+                            <div>
+                                <strong>Фільтри</strong>
+                                <p>Розширений пошук по викладачах, групах, предметах</p>
+                            </div>
+                        </div>
+                        
+                        <div class="help-button-item">
+                            <span class="help-btn-demo"><i class="fa-solid fa-calendar-days"></i></span>
+                            <div>
+                                <strong>Варіанти перенесення</strong>
+                                <p>Запропонувати 1-3 варіанти часу для перенесення пари. Адмін обере найкращий</p>
+                            </div>
+                        </div>
+                        
+                        <div class="help-button-item">
+                            <span class="help-btn-demo"><i class="fa-solid fa-rotate"></i></span>
+                            <div>
+                                <strong>Оновити</strong>
+                                <p>Завантажити найсвіжіші дані з хмари</p>
+                            </div>
+                        </div>
+                        
+                        <div class="help-button-item">
+                            <span class="help-btn-demo" style="background: #3b82f6; color: white;"><i class="fa-solid fa-paper-plane"></i></span>
+                            <div>
+                                <strong>Узгодити зміни</strong>
+                                <p>Відправити свої правки на розгляд адміну</p>
+                            </div>
+                        </div>
+                        
+                        <div class="help-button-item">
+                            <span class="help-btn-demo"><i class="fa-solid fa-lock"></i></span>
+                            <div>
+                                <strong>Вхід</strong>
+                                <p>Авторизація адміністратора</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Кнопки управління (Адмін) -->
+                <div class="help-section">
+                    <h3 class="help-title">🔘 Додаткові кнопки (Режим Адмін)</h3>
+                    
+                    <div class="help-buttons-grid">
+                        <div class="help-button-item">
+                            <span class="help-btn-demo" style="background: #fed7aa; color: #9a3412;"><i class="fa-solid fa-code-compare"></i></span>
+                            <div>
+                                <strong>Обробка запитів</strong>
+                                <p>Перегляд та обробка змін від викладачів: прийняти, відхилити або вибрати варіант. Фільтрування по кафедрах для зручності</p>
+                            </div>
+                        </div>
+                        
+                        <div class="help-button-item">
+                            <span class="help-btn-demo"><i class="fa-solid fa-user-group"></i></span>
+                            <div>
+                                <strong>Викладачі</strong>
+                                <p>Генерація персональних розкладів для викладачів у форматі PDF</p>
+                            </div>
+                        </div>
+                        
+                        <div class="help-button-item">
+                            <span class="help-btn-demo" style="background: #dcfce7; color: #166534; border-color: #bbf7d0;"><i class="fa-solid fa-floppy-disk"></i></span>
+                            <div>
+                                <strong>Зберегти</strong>
+                                <p>Збереження змін у хмару</p>
+                            </div>
+                        </div>
+                        
+                        <div class="help-button-item">
+                            <span class="help-btn-demo"><i class="fa-solid fa-right-from-bracket"></i></span>
+                            <div>
+                                <strong>Вихід</strong>
+                                <p>Повернутися до режиму гостя</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Додаткові інструменти -->
+                <div class="help-section">
+                    <h3 class="help-title">🛠 Додаткові інструменти</h3>
+                    
+                    <div class="help-buttons-grid">
+                        <div class="help-button-item">
+                            <span class="help-btn-demo"><i class="fa-solid fa-chart-simple"></i></span>
+                            <div>
+                                <strong>Статистика</strong>
+                                <p>Аналітика: завантаженість викладачів, груп, аудиторій</p>
+                            </div>
+                        </div>
+                        
+                        <div class="help-button-item">
+                            <span class="help-btn-demo" style="color: #8b5cf6; border-color: #ddd6fe;"><i class="fa-solid fa-circle-question"></i></span>
+                            <div>
+                                <strong>Допомога</strong>
+                                <p>Ця інструкція :)</p>
+                            </div>
+                        </div>
+                        
+                        <div class="help-button-item">
+                            <span class="help-btn-demo" style="color: #059669; background: #d1fae5; border-color: #a7f3d0;"><i class="fa-solid fa-file-excel"></i></span>
+                            <div>
+                                <strong>Експорт Excel</strong>
+                                <p>Зберегти розклад в форматі Excel (.xlsx) з окремими аркушами для кожного тижня</p>
+                            </div>
+                        </div>
+                        
+                        <div class="help-button-item">
+                            <span class="help-btn-demo" style="color: #2563eb; background: #eff6ff; border-color: #bfdbfe;"><i class="fa-solid fa-camera"></i></span>
+                            <div>
+                                <strong>Експорт PNG</strong>
+                                <p>Зберегти розклад як зображення</p>
+                            </div>
+                        </div>
+                        
+                        <div class="help-button-item">
+                            <span class="help-btn-demo" style="color: #4f46e5; border-color: #c7d2fe;"><i class="fa-solid fa-download"></i></span>
+                            <div>
+                                <strong>Резервна копія</strong>
+                                <p>Завантажити резервну копію розкладу</p>
+                            </div>
+                        </div>
+                        
+                        <div class="help-button-item">
+                            <span class="help-btn-demo" style="color: #4f46e5; border-color: #c7d2fe;"><i class="fa-solid fa-upload"></i></span>
+                            <div>
+                                <strong>Відновлення</strong>
+                                <p>Відновити дані з резервної копії</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Операції з парами -->
+                <div class="help-section">
+                    <h3 class="help-title">🎬 Операції з парами</h3>
+                    
+                    <div class="help-item">
+                        <div class="help-icon-group">
+                            <span class="help-action-btn" style="color: #d97706; background: #fef3c7; border-color: #fde68a;">
+                                <i class="fa-solid fa-copy"></i>
+                            </span>
+                            <strong>Дублювати</strong>
+                        </div>
+                        <p>Копіювати пару на інший час або тиждень.</p>
+                    </div>
+                    
+                    <div class="help-item">
+                        <div class="help-icon-group">
+                            <span class="help-action-btn" style="color: #3b82f6; background: #eff6ff; border-color: #bfdbfe;">
+                                <i class="fa-solid fa-arrow-right"></i>
+                            </span>
+                            <strong>Перемістити</strong>
+                        </div>
+                        <p>Перенести пару в інший часовий слот. Можна також перетягнути мишкою.</p>
+                    </div>
+                    
+                    <div class="help-item">
+                        <div class="help-icon-group">
+                            <span class="help-action-btn" style="color: #8b5cf6; background: #f5f3ff; border-color: #ddd6fe;">
+                                <i class="fa-solid fa-right-left"></i>
+                            </span>
+                            <strong>Поміняти місцями</strong>
+                        </div>
+                        <p>Поміняти дві пари місцями.</p>
+                    </div>
+                    
+                    <div class="help-item">
+                        <div class="help-icon-group">
+                            <span class="help-action-btn" style="color: #06b6d4; background: #ecfeff; border-color: #a5f3fc;">
+                                <i class="fa-solid fa-pen"></i>
+                            </span>
+                            <strong>Редагувати</strong>
+                        </div>
+                        <p>Змінити інформацію про пару.</p>
+                    </div>
+                    
+                    <div class="help-item">
+                        <div class="help-icon-group">
+                            <span class="help-action-btn" style="color: #ef4444; background: #fef2f2; border-color: #fecaca;">
+                                <i class="fa-solid fa-trash"></i>
+                            </span>
+                            <strong>Видалити</strong>
+                        </div>
+                        <p>Видалити пару з розкладу.</p>
+                    </div>
+                </div>
+
+                <!-- Швидкі фільтри -->
+                <div class="help-section">
+                    <h3 class="help-title">⚡ Швидкі фільтри</h3>
+                    
+                    <div class="help-item">
+                        <div class="help-icon-group">
+                            <span class="help-icon">👥</span>
+                            <strong>Фільтр по групі</strong>
+                        </div>
+                        <p>Натисніть на бейдж групи (наприклад, "МБА 11") щоб підсвітити всі пари цієї групи.</p>
+                    </div>
+                    
+                    <div class="help-item">
+                        <div class="help-icon-group">
+                            <span class="help-icon">👨‍🏫</span>
+                            <strong>Фільтр по викладачу</strong>
+                        </div>
+                        <p>Натисніть на ім'я викладача щоб побачити всі його пари.</p>
+                    </div>
+                    
+                    <div class="help-item">
+                        <p><em>Щоб вимкнути фільтр, натисніть на хрестик у синій панелі зверху або клікніть у порожнє місце.</em></p>
+                    </div>
+                </div>
+
+                <!-- Фільтр кафедр -->
+                <div class="help-section">
+                    <h3 class="help-title">🏫 Фільтр кафедр (Режим порівняння)</h3>
+                    
+                    <div class="help-item">
+                        <div class="help-icon-group">
+                            <span class="help-icon">🔍</span>
+                            <strong>Фільтрація запитів по кафедрах</strong>
+                        </div>
+                        <p>У режимі "Обробка запитів" з'являється панель фільтрів кафедр зверху. Кожна кафедра має свій колір та лічильник заявок.</p>
+                    </div>
+                    
+                    <div class="help-item">
+                        <div class="help-icon-group">
+                            <span class="help-icon">🎨</span>
+                            <strong>Кольорові бейджі</strong>
+                        </div>
+                        <p>На кожній картці пари з запитом відображається бейдж з кодом кафедри (наприклад, "MIT", "FM"). Наведіть курсор щоб побачити повну назву.</p>
+                    </div>
+                    
+                    <div class="help-item">
+                        <div class="help-icon-group">
+                            <span class="help-icon">✅</span>
+                            <strong>Швидка обробка</strong>
+                        </div>
+                        <p>Оберіть кафедру у фільтрі щоб побачити тільки її запити. Кнопка "Усі" показує всі запити від усіх кафедр.</p>
+                    </div>
+                </div>
+
+                <!-- Підказки та секрети -->
+                <div class="help-section">
+                    <h3 class="help-title">💡 Корисні підказки</h3>
+                    
+                    <ul style="padding-left: 1.5rem; margin: 0.5rem 0;">
+                        <li style="margin-bottom: 0.5rem;"><strong>Поточний день</strong> підсвічується жовтим фоном</li>
+                        <li style="margin-bottom: 0.5rem;"><strong>Поточна пара</strong> має яскравішу рамку</li>
+                        <li style="margin-bottom: 0.5rem;"><strong>Конфлікти</strong> (співпадіння викладачів/аудиторій) позначаються червоним</li>
+                        <li style="margin-bottom: 0.5rem;"><strong>Автозбереження</strong> працює в фоновому режимі для адмінів</li>
+                        <li style="margin-bottom: 0.5rem;"><strong>Drag & Drop:</strong> Можна перетягувати пари мишкою між слотами</li>
+                    </ul>
+                </div>
+
+                <!-- Типи занять -->
+                <div class="help-section">
+                    <h3 class="help-title">🎨 Типи занять</h3>
+                    
+                    <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px;">
+                        <span class="help-type-badge" style="background: #fef3c7; color: #d97706;">Лекція</span>
+                        <span class="help-type-badge" style="background: #d1fae5; color: #059669;">Лабораторна</span>
+                        <span class="help-type-badge" style="background: #dbeafe; color: #2563eb;">Практична</span>
+                        <span class="help-type-badge" style="background: #ede9fe; color: #7c3aed;">Семінар</span>
+                    </div>
+                </div>
+
+                <!-- Контакти -->
+                <div class="help-section" style="background: #f8fafc; padding: 1rem; border-radius: 0.5rem; margin-top: 1.5rem;">
+                    <h3 class="help-title" style="margin-top: 0;">📧 Потрібна допомога?</h3>
+                   <p style="margin: 0.5rem 0;">Якщо у вас виникли питання або знайшли помилку, напишіть нам на адресу: <strong><a href="/cdn-cgi/l/" class="__cf_email__" data-cfemail="b6dfc2dbddd7d0d3d2c4d7f6d1dbd7dfda98d5d9db"><span class="__cf_email__" data-cfemail="452c31282e242320213724052228242c296b262a28">[<span class="__cf_email__" data-cfemail="0371626e70686a6943646e626a6f2d606c6e">[email&#160;protected]</span>]</span></a></strong></p>
+                    <p style="margin: 0.5rem 0; font-size: 0.85rem; color: #64748b;">
+                        <strong>Версія:</strong> 2.0 | 
+                        <strong>Оновлено:</strong> Лютий 2026
+                    </p>
+                    <p style="margin: 0.8rem 0 0 0; font-size: 0.8rem; color: #64748b; border-top: 1px solid #e2e8f0; padding-top: 0.8rem;">
+                        © 2026 Кафедра Менеджменту ІТ-сфери та лабораторії технічних засобів навчання ЛНУВМБ імені С.З. Гжицького
+                    </p>
+                </div>
+            </div>
+            
+            <div class="modal-actions" style="margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid #e2e8f0;">
+                <button class="btn btn-primary" onclick="closeHelp()">Зрозуміло!</button>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="modal-overlay" id="advancedSearchModal">
+        <div class="modal-box" style="width: 450px;">
+            <div class="modal-header">🔍 Розширений пошук</div>
+            
+            <div class="form-group">
+                <label class="form-label">Викладач</label>
+                <input class="form-input" type="text" id="advSearchTeacher" list="teachersList" placeholder="Всі викладачі">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Група</label>
+                <input class="form-input" type="text" id="advSearchGroup" list="groupsList" placeholder="Всі групи">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Предмет</label>
+                <input class="form-input" type="text" id="advSearchSubject" list="subjectsList" placeholder="Всі предмети">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Тип заняття</label>
+                <select class="form-input" id="advSearchType">
+                    <option value="">Всі типи</option>
+                    <option value="Лекція">Лекція</option>
+                    <option value="Лабораторна">Лабораторна</option>
+                    <option value="Практична">Практична</option>
+                    <option value="Семінар">Семінар</option>
+                </select>
+            </div>
+
+            <div class="modal-actions">
+                <button class="btn btn-secondary" onclick="closeAdvancedSearch()">Скасувати</button>
+                <button class="btn btn-primary" onclick="applyAdvancedSearch()">Застосувати</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Teachers modal: list of department teachers with links to teacher.html -->
+    <div class="modal-overlay" id="teachersModal" onclick="if(event.target===this) closeTeachersModal()">
+        <div class="modal-box" style="width: 500px; max-height: 85vh; display: flex; flex-direction: column;">
+            <div class="modal-header">👨‍🏫 Викладачі кафедри</div>
+            <div style="padding: 12px 16px; border-bottom: 1px solid var(--border-color, #e5e7eb); font-size: 0.9rem; color: var(--text-secondary, #64748b);">
+                Посилання відкриває персональний розклад викладача у додатку.
+            </div>
+            <div style="overflow-y: auto; flex: 1; padding: 12px;" id="teachersModalList"></div>
+            <div class="modal-actions">
+                <button class="btn btn-secondary" onclick="closeTeachersModal()">Закрити</button>
+            </div>
+        </div>
+    </div>
+    
+    <datalist id="roomsList"></datalist>
+
+    <!-- Кастомний Alert/Confirm -->
+    <div class="modal-overlay" id="customAlertModal">
+        <div class="modal-box" style="max-width: 450px; animation: modalBounce 0.3s ease;">
+            <div id="customAlertIcon" style="text-align: center; font-size: 48px; margin: 20px 0 10px 0;">
+                <i class="fa-solid fa-circle-info" style="color: #3b82f6;"></i>
+            </div>
+            <div class="modal-header" id="customAlertTitle" style="text-align: center; font-size: 20px; padding: 10px 20px;">Повідомлення</div>
+            <div style="padding: 10px 30px 30px 30px; text-align: center; font-size: 15px; line-height: 1.6; color: #475569;" id="customAlertMessage"></div>
+            <div class="modal-actions" id="customAlertActions" style="gap: 10px; padding: 0 20px 20px 20px;">
+                <button class="btn btn-primary" onclick="closeCustomAlert(true)" style="min-width: 100px;">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/shared-config.js"></script>
+    <script src="js/config-department.js"></script>
+    <script src="js/department-script.js"></script>
+</body>
+</html>

@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <!--
+    Система управління розкладом Університету
+    Розробник: Ігор Рамський (ramskij@gmail.com)
+    © 2026 Всі права захищені
+    -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="mobile-web-app-capable" content="yes">
+    <title>Розклад викладача</title>
+    
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+
+    <link rel="stylesheet" href="css/teacher-styles.css">
+</head>
+<body>
+    <!-- Панель швидкого фільтра -->
+    <div id="filter-panel">
+        <span id="filter-msg"><i class="fa-solid fa-filter"></i> Фільтр активний</span>
+        <button onclick="clearHighlight()">Скинути (Esc)</button>
+    </div>
+    
+    <div id="weekWatermark" class="watermark" aria-hidden="true"></div>
+
+    <header>
+        <div class="header-row">
+            <div class="header-title-container">
+                <h1 class="teacher-name" id="teacherName">Розклад викладача</h1>
+            </div>
+            <div class="header-actions">
+                <button class="btn-icon" id="requestsBtn" onclick="openRequestsModal()" title="Мої заявки">
+                    <i class="fa-solid fa-clipboard-list"></i>
+                    <span class="badge" id="requestsBadgeHeader" style="display:none;"></span>
+                </button>
+                <button class="btn-icon" id="statsBtn" onclick="openStatsModal()" title="Статистика">
+                    <i class="fa-solid fa-chart-simple"></i>
+                </button>
+                <button class="btn-icon" id="themeToggle" onclick="toggleTheme()">
+                    <i class="fa-solid fa-moon" id="themeIcon"></i>
+                </button>
+                <button class="btn-icon" id="refreshBtn" onclick="fetchSchedule(true)">
+                    <i class="fa-solid fa-arrows-rotate"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Current week indicator -->
+    <div class="current-week-indicator" id="currentWeekIndicator" style="display: none;">
+        <i class="fa-solid fa-calendar-week"></i>
+        <span id="currentWeekText">Поточний тиждень: I</span>
+    </div>
+
+    <div class="controls-area">
+        <div class="week-toggle">
+            <button class="week-btn active" id="btnWeek1" onclick="setWeek(1)">I тиждень</button>
+            <button class="week-btn" id="btnWeek2" onclick="setWeek(2)">II тиждень</button>
+        </div>
+    </div>
+
+    <!-- Schedule View -->
+    <div id="scheduleContainer" class="schedule-container">
+        <div class="empty-state">
+            <i class="fa-solid fa-cloud-arrow-down"></i>
+            <p>Завантажуємо дані...</p>
+        </div>
+    </div>
+
+    <!-- Modal для перенесення з сіткою тижня -->
+    <div class="modal-overlay" id="moveModal" onclick="if(event.target===this) cancelMoveMode()">
+        <div class="move-modal">
+            <div class="move-modal-header">
+                <div>
+                    <div class="move-modal-title">Перенесення пари</div>
+                    <div class="move-modal-subtitle" id="moveLessonInfo"></div>
+                </div>
+                <button class="btn-close" onclick="cancelMoveMode()">&times;</button>
+            </div>
+            <div class="move-modal-body">
+                <div class="move-week-selector">
+                    <button class="move-week-btn active" id="moveWeek1" onclick="switchMoveWeek(1)">I тиждень</button>
+                    <button class="move-week-btn" id="moveWeek2" onclick="switchMoveWeek(2)">II тиждень</button>
+                </div>
+                <div class="move-grid" id="moveGrid">
+                    <!-- Генерується JS -->
+                </div>
+            </div>
+            <div class="move-modal-footer">
+                <button class="btn btn-secondary" onclick="cancelMoveMode()">Скасувати</button>
+                <button class="btn btn-primary" onclick="submitMoveRequest()" id="submitMoveBtn">Відправити заявку</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal для деталей пари -->
+    <div class="modal-overlay" id="modalOverlay" onclick="if(event.target===this) closeDetailsModal()">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-title">Деталі пари</div>
+                <button class="btn-close" onclick="closeDetailsModal()">&times;</button>
+            </div>
+            <div id="modalContent"></div>
+        </div>
+    </div>
+
+    <!-- Modal для редагування пари -->
+    <div class="modal-overlay" id="editModal" onclick="if(event.target===this) closeEditModal()">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-title">Редагування пари</div>
+                <button class="btn-close" onclick="closeEditModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="editLessonInfo" style="margin-bottom: 20px; padding: 12px; background: #f8fafc; border-radius: 10px; font-size: 0.9rem;"></div>
+                
+                <!-- Вкладки -->
+                <div class="edit-tabs">
+                    <button class="edit-tab active" onclick="switchEditTab('note')">📝 Примітка</button>
+                    <button class="edit-tab" onclick="switchEditTab('workshop')">📍 Місце проведення</button>
+                </div>
+                
+                <!-- Вкладка: Примітка -->
+                <div id="editTabNote" class="edit-tab-content active">
+                    <div class="form-group">
+                        <label class="form-label">
+                            <i class="fa-solid fa-circle-info"></i>
+                            Додаткова інформація
+                        </label>
+                        <textarea id="editNote" class="form-input" rows="6" placeholder="Введіть будь-яку додаткову інформацію: коментарі, посилання на Zoom/Moodle, завдання тощо..."></textarea>
+                        <div style="margin-top: 6px; font-size: 0.85rem; color: var(--text-muted);">
+                            💡 Посилання автоматично стануть клікабельними
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Вкладка: Практикум -->
+                <div id="editTabWorkshop" class="edit-tab-content">
+                    <div class="form-group">
+                        <label class="form-label">
+                            <i class="fa-solid fa-door-open"></i>
+                            Практикум
+                        </label>
+                        <select id="editWorkshop" class="form-input">
+                            <option value="">Завантаження...</option>
+                        </select>
+                        <div id="workshopWarning" style="display: none; margin-top: 8px; padding: 10px; background: #fef3c7; border-left: 3px solid #f59e0b; border-radius: 6px; font-size: 0.85rem;">
+                            <strong>⚠️ Увага!</strong>
+                            <div id="workshopWarningText"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeEditModal()">Скасувати</button>
+                <button class="btn btn-primary" onclick="saveEditedLesson()">Зберегти</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics Modal -->
+    <div class="modal-overlay" id="statsModal" onclick="if(event.target===this) closeStatsModal()">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-title">📊 Статистика навантаження</div>
+                <button class="btn-close" onclick="closeStatsModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <div class="stat-icon-big blue">
+                            <i class="fa-solid fa-book-open"></i>
+                        </div>
+                        <div class="stat-info">
+                            <div class="stat-big-value" id="modalStatWeek1">0</div>
+                            <div class="stat-big-label">Пар на I тижні</div>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-item">
+                        <div class="stat-icon-big orange">
+                            <i class="fa-solid fa-book"></i>
+                        </div>
+                        <div class="stat-info">
+                            <div class="stat-big-value" id="modalStatWeek2">0</div>
+                            <div class="stat-big-label">Пар на II тижні</div>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-item">
+                        <div class="stat-icon-big green">
+                            <i class="fa-solid fa-users"></i>
+                        </div>
+                        <div class="stat-info">
+                            <div class="stat-big-value" id="modalStatGroups">0</div>
+                            <div class="stat-big-label">Різних груп</div>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-item">
+                        <div class="stat-icon-big pink">
+                            <i class="fa-solid fa-mug-hot"></i>
+                        </div>
+                        <div class="stat-info">
+                            <div class="stat-big-value" id="modalStatWindows">0</div>
+                            <div class="stat-big-label">Вікон (поточний тиждень)</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom Alert/Confirm Modal -->
+    <div class="modal-overlay" id="customAlertModal">
+        <div class="modal-box" style="max-width: 450px; animation: modalBounce 0.3s ease;">
+            <div id="customAlertIcon" style="text-align: center; font-size: 48px; margin: 20px 0 10px 0;">
+                <i class="fa-solid fa-circle-info" style="color: #3b82f6;"></i>
+            </div>
+            <div class="modal-header" id="customAlertTitle" style="text-align: center; font-size: 20px; padding: 10px 20px; color: var(--text-main);">Повідомлення</div>
+            <div style="padding: 10px 30px 30px 30px; text-align: center; font-size: 15px; line-height: 1.6; color: var(--text-main); white-space: pre-line;" id="customAlertMessage"></div>
+            <div class="modal-actions" id="customAlertActions" style="gap: 10px; padding: 0 20px 20px 20px;">
+                <button class="btn btn-primary" onclick="closeCustomAlert(true)" style="min-width: 100px;">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Requests Modal -->
+    <div class="modal-overlay" id="requestsModal" onclick="if(event.target===this) closeRequestsModal()">
+        <div class="modal" style="max-width: 700px;">
+            <div class="modal-header">
+                <div class="modal-title">📋 Мої заявки на перенесення</div>
+                <button class="btn-close" onclick="closeRequestsModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="requestsList"></div>
+            </div>
+        </div>
+    </div>
+
+
+    <script src="js/shared-config.js"></script>
+    <script src="js/config-teacher.js"></script>
+    <script src="js/teacher-script.js"></script>
+</body>
+</html>
